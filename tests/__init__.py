@@ -1,0 +1,1 @@
+"""TermiArt test suite."""
