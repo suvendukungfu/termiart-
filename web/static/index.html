@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TermiArt Studio — High-Fidelity Terminal Image Art Converter</title>
+  <meta name="description" content="Transform any image into stunning terminal character artwork with 24-bit TrueColor ANSI, Half-block subpixels, Braille dot matrices, dense ASCII, and cybernetic animations.">
+  <meta name="theme-color" content="#08090d">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="theme-cyber">
+  <div class="crt-overlay" id="crt-overlay"></div>
+  <div class="background-glow"></div>
+
+  <!-- Main App Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="terminal-badge">
+        <span class="prompt-symbol">&gt;_</span>
+      </div>
+      <div class="brand-text">
+        <h1 class="logo-title">TERMIART <span class="logo-sub">STUDIO</span></h1>
+        <p class="logo-caption">High-Fidelity Terminal Character Art Engine</p>
+      </div>
+    </div>
+
+    <div class="header-status">
+      <span class="status-indicator live"></span>
+      <span class="status-text">ENGINE ONLINE</span>
+      <span class="status-tag">V2.0 // TRUECOLOR</span>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn-icon" id="toggle-crt-btn" title="Toggle CRT Scanline Effect" aria-label="Toggle CRT Scanlines">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x2="12" y1="17" y2="21"/></svg>
+        <span class="btn-tooltip">CRT FX</span>
+      </button>
+
+      <button type="button" class="btn-icon" id="btn-font-down" title="Decrease Terminal Font Size" aria-label="Zoom Out Text">A-</button>
+      <button type="button" class="btn-icon" id="btn-font-up" title="Increase Terminal Font Size" aria-label="Zoom In Text">A+</button>
+
+      <button type="button" class="btn-ghost" id="btn-load-demo" title="Load High-Quality Sample Art">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>Demo Image</span>
+      </button>
+
+      <button type="button" class="btn-primary" id="btn-random-roll" title="Procedural Random Generator">
+        <span class="dice-icon">🎲</span>
+        <span>Randomize</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Workspace Container -->
+  <main class="studio-workspace">
+    <!-- Left Configuration Sidebar -->
+    <aside class="controls-panel" id="controls-panel">
+      <!-- Section: Image Source -->
+      <section class="control-card">
+        <div class="card-header">
+          <h2 class="card-title">1. Image Input</h2>
+          <span class="card-hint">PNG / JPG / WEBP</span>
+        </div>
+
+        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload image">
+          <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" hidden>
+          <div class="dropzone-content" id="dropzone-prompt">
+            <svg class="upload-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p class="dropzone-main">Drop image here or <span class="highlight">browse</span></p>
+            <p class="dropzone-sub">Supports drag &amp; drop from Finder or Desktop</p>
+          </div>
+          <div class="thumbnail-wrapper hidden" id="thumbnail-wrapper">
+            <img id="image-thumbnail" alt="Input preview" src="" />
+            <div class="thumb-overlay">
+              <span id="thumb-name">image.png</span>
+              <button type="button" id="btn-remove-image" class="btn-thumb-clear" title="Change Image">&times;</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Presets -->
+      <section class="control-card">
+        <div class="card-header">
+          <h2 class="card-title">2. Curated Presets</h2>
+          <span class="card-hint">1-Click Styles</span>
+        </div>
+        <div class="presets-grid" id="presets-container">
+          <button type="button" class="preset-pill active" data-preset="">Custom</button>
+          <button type="button" class="preset-pill" data-preset="cyberpunk">Cyberpunk</button>
+          <button type="button" class="preset-pill" data-preset="matrix">Matrix Rain</button>
+          <button type="button" class="preset-pill" data-preset="anime">Anime Crisp</button>
+          <button type="button" class="preset-pill" data-preset="fire">Blazing Fire</button>
+          <button type="button" class="preset-pill" data-preset="ocean">Deep Ocean</button>
+          <button type="button" class="preset-pill" data-preset="purple_neon">Purple Neon</button>
+        </div>
+      </section>
+
+      <!-- Section: Renderer Style -->
+      <section class="control-card">
+        <div class="card-header">
+          <h2 class="card-title">3. Character Renderer</h2>
+          <span class="card-hint">Style Matrix</span>
+        </div>
+        <div class="styles-grid" id="styles-container">
+          <label class="style-card active">
+            <input type="radio" name="renderer-style" value="halfblock" checked>
+            <div class="style-card-body">
+              <span class="style-icon">▀▄</span>
+              <div class="style-info">
+                <span class="style-name">Half-Block</span>
+                <span class="style-desc">24-bit TrueColor Subpixels</span>
+              </div>
+              <span class="style-badge">HD</span>
+            </div>
+          </label>
+
+          <label class="style-card">
+            <input type="radio" name="renderer-style" value="dense_ascii">
+            <div class="style-card-body">
+              <span class="style-icon">&amp;#%</span>
+              <div class="style-info">
+                <span class="style-name">Dense ASCII</span>
+                <span class="style-desc">70-Level Shading Ramp</span>
+              </div>
+              <span class="style-badge">Deep</span>
+            </div>
+          </label>
+
+          <label class="style-card">
+            <input type="radio" name="renderer-style" value="braille">
+            <div class="style-card-body">
+              <span class="style-icon">⣾⣽</span>
+              <div class="style-info">
+                <span class="style-name">Braille Matrix</span>
+                <span class="style-desc">2×4 Dot High Density</span>
+              </div>
+              <span class="style-badge">Crisp</span>
+            </div>
+          </label>
+
+          <label class="style-card">
+            <input type="radio" name="renderer-style" value="matrix">
+            <div class="style-card-body">
+              <span class="style-icon">01ﾊ</span>
+              <div class="style-info">
+                <span class="style-name">Matrix Glyph</span>
+                <span class="style-desc">Digital Rain Katakana</span>
+              </div>
+              <span class="style-badge">Cyber</span>
+            </div>
+          </label>
+
+          <label class="style-card">
+            <input type="radio" name="renderer-style" value="ascii">
+            <div class="style-card-body">
+              <span class="style-icon">@#+</span>
+              <div class="style-info">
+                <span class="style-name">Classic ASCII</span>
+                <span class="style-desc">Vintage Monospace Ramp</span>
+              </div>
+              <span class="style-badge">Retro</span>
+            </div>
+          </label>
+
+          <label class="style-card">
+            <input type="radio" name="renderer-style" value="unicode">
+            <div class="style-card-body">
+              <span class="style-icon">░▒▓</span>
+              <div class="style-info">
+                <span class="style-name">Unicode Shades</span>
+                <span class="style-desc">Textured Block Gradients</span>
+              </div>
+              <span class="style-badge">Block</span>
+            </div>
+          </label>
+
+          <label class="style-card">
+            <input type="radio" name="renderer-style" value="cyberpunk">
+            <div class="style-card-body">
+              <span class="style-icon">◈▣</span>
+              <div class="style-info">
+                <span class="style-name">Cyberpunk</span>
+                <span class="style-desc">High-Sat Halftone Glow</span>
+              </div>
+              <span class="style-badge">Neon</span>
+            </div>
+          </label>
+
+          <label class="style-card">
+            <input type="radio" name="renderer-style" value="rgb">
+            <div class="style-card-body">
+              <span class="style-icon">RGB</span>
+              <div class="style-info">
+                <span class="style-name">RGB Letters</span>
+                <span class="style-desc">Chromatic Color Letters</span>
+              </div>
+              <span class="style-badge">Color</span>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <!-- Section: Color Themes -->
+      <section class="control-card">
+        <div class="card-header">
+          <h2 class="card-title">4. Color Theme</h2>
+          <span class="card-hint">Palette Map</span>
+        </div>
+        <div class="themes-grid" id="themes-container">
+          <label class="theme-chip active" title="Original 24-bit TrueColor">
+            <input type="radio" name="color-theme" value="original" checked>
+            <span class="chip-color chip-original"></span>
+            <span class="chip-label">Original</span>
+          </label>
+
+          <label class="theme-chip" title="Matrix Green Phosphor">
+            <input type="radio" name="color-theme" value="matrix">
+            <span class="chip-color" style="background: #00ff41;"></span>
+            <span class="chip-label">Matrix</span>
+          </label>
+
+          <label class="theme-chip" title="Cyberpunk Cyan & Magenta">
+            <input type="radio" name="color-theme" value="cyberpunk">
+            <span class="chip-color" style="background: linear-gradient(135deg, #00f0ff, #ff007f);"></span>
+            <span class="chip-label">Cyberpunk</span>
+          </label>
+
+          <label class="theme-chip" title="Rainbow Spectral Gradient">
+            <input type="radio" name="color-theme" value="rainbow">
+            <span class="chip-color" style="background: linear-gradient(135deg, #ff0055, #ffd000, #00e5ff);"></span>
+            <span class="chip-label">Rainbow</span>
+          </label>
+
+          <label class="theme-chip" title="Blazing Fire & Heat">
+            <input type="radio" name="color-theme" value="fire">
+            <span class="chip-color" style="background: linear-gradient(135deg, #ff4500, #ffa500, #ffff55);"></span>
+            <span class="chip-label">Fire</span>
+          </label>
+
+          <label class="theme-chip" title="Deep Oceanic Blue">
+            <input type="radio" name="color-theme" value="ocean">
+            <span class="chip-color" style="background: linear-gradient(135deg, #001f3f, #0074d9, #7fdbff);"></span>
+            <span class="chip-label">Ocean</span>
+          </label>
+
+          <label class="theme-chip" title="Purple Neon Synthwave">
+            <input type="radio" name="color-theme" value="purple_neon">
+            <span class="chip-color" style="background: linear-gradient(135deg, #7928ca, #ff0080);"></span>
+            <span class="chip-label">Synthwave</span>
+          </label>
+
+          <label class="theme-chip" title="High-Contrast Monochrome">
+            <input type="radio" name="color-theme" value="monochrome">
+            <span class="chip-color" style="background: linear-gradient(135deg, #111, #fff);"></span>
+            <span class="chip-label">Mono</span>
+          </label>
+
+          <label class="theme-chip" title="Anime Vivid Saturated">
+            <input type="radio" name="color-theme" value="anime">
+            <span class="chip-color" style="background: linear-gradient(135deg, #ff3366, #33ccff);"></span>
+            <span class="chip-label">Anime</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Section: Sliders & Adjustments -->
+      <section class="control-card">
+        <div class="card-header">
+          <h2 class="card-title">5. Image Adjustments</h2>
+          <button type="button" class="btn-text-action" id="btn-reset-sliders">Reset</button>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <label for="slider-width">Canvas Width (Columns)</label>
+            <span class="slider-val" id="val-width">100</span>
+          </div>
+          <input type="range" id="slider-width" min="30" max="180" step="2" value="100">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <label for="slider-contrast">Contrast Multiplier</label>
+            <span class="slider-val" id="val-contrast">1.00×</span>
+          </div>
+          <input type="range" id="slider-contrast" min="0.2" max="2.5" step="0.05" value="1.0">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <label for="slider-brightness">Brightness Multiplier</label>
+            <span class="slider-val" id="val-brightness">1.00×</span>
+          </div>
+          <input type="range" id="slider-brightness" min="0.2" max="2.5" step="0.05" value="1.0">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <label for="slider-sharpness">Sharpness Multiplier</label>
+            <span class="slider-val" id="val-sharpness">1.00×</span>
+          </div>
+          <input type="range" id="slider-sharpness" min="0.2" max="2.5" step="0.05" value="1.0">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <label for="slider-gamma">Gamma Curve</label>
+            <span class="slider-val" id="val-gamma">1.00</span>
+          </div>
+          <input type="range" id="slider-gamma" min="0.2" max="2.5" step="0.05" value="1.0">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <label for="slider-density">Character Density</label>
+            <span class="slider-val" id="val-density">1.00×</span>
+          </div>
+          <input type="range" id="slider-density" min="0.5" max="2.0" step="0.05" value="1.0">
+        </div>
+
+        <div class="toggles-grid">
+          <label class="toggle-item">
+            <input type="checkbox" id="check-edge">
+            <span class="toggle-box"></span>
+            <span class="toggle-text">Edge Enhance (Sobel)</span>
+          </label>
+
+          <label class="toggle-item">
+            <input type="checkbox" id="check-invert">
+            <span class="toggle-box"></span>
+            <span class="toggle-text">Invert Luminance</span>
+          </label>
+
+          <label class="toggle-item">
+            <input type="checkbox" id="check-color" checked>
+            <span class="toggle-box"></span>
+            <span class="toggle-text">TrueColor ANSI</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Section: Real-Time Animation Studio -->
+      <section class="control-card animation-studio">
+        <div class="card-header">
+          <h2 class="card-title">6. Live Animation Engine</h2>
+          <span class="card-badge-live" id="anim-live-badge">STANDBY</span>
+        </div>
+
+        <div class="anim-controls">
+          <div class="anim-select-row">
+            <select id="anim-type-select" class="cyber-select" aria-label="Animation Type">
+              <option value="matrix">Matrix Digital Rain</option>
+              <option value="glitch">Cyberpunk Glitch Scan</option>
+              <option value="pulse">Breathing Luminance Pulse</option>
+              <option value="cycle">Rainbow Spectrum Cycle</option>
+            </select>
+
+            <button type="button" class="btn-anim-play" id="btn-toggle-anim">
+              <svg id="play-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg id="pause-icon" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              <span id="anim-btn-label">Play</span>
+            </button>
+          </div>
+
+          <div class="slider-group compact">
+            <div class="slider-header">
+              <label for="slider-fps">Target Frame Rate</label>
+              <span class="slider-val" id="val-fps">15 FPS</span>
+            </div>
+            <input type="range" id="slider-fps" min="5" max="30" step="1" value="15">
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Right Virtual Terminal Display Panel -->
+    <section class="terminal-stage">
+      <!-- Simulated Terminal Window -->
+      <div class="macos-terminal-window" id="terminal-window">
+        <!-- Terminal Window Titlebar -->
+        <div class="terminal-titlebar">
+          <div class="window-buttons">
+            <span class="btn-dot dot-close" title="Close"></span>
+            <span class="btn-dot dot-min" title="Minimize"></span>
+            <span class="btn-dot dot-max" id="btn-fullscreen-dot" title="Expand Fullscreen"></span>
+          </div>
+
+          <div class="terminal-tab-info">
+            <span class="tab-icon">❯</span>
+            <span class="tab-title" id="terminal-title-text">termiart -s halfblock -t original (100 cols)</span>
+          </div>
+
+          <div class="telemetry-bar">
+            <span class="telemetry-item" id="tel-cols">Cols: --</span>
+            <span class="telemetry-item" id="tel-rows">Rows: --</span>
+            <span class="telemetry-item" id="tel-chars">Chars: --</span>
+            <span class="telemetry-item" id="tel-time">Time: -- ms</span>
+          </div>
+        </div>
+
+        <!-- Terminal Canvas Output Area -->
+        <div class="terminal-viewport" id="terminal-viewport">
+          <div class="terminal-empty-state hidden" id="terminal-empty">
+            <p>Upload an image or click <strong>Demo Image</strong> to render art.</p>
+          </div>
+          <div class="terminal-loader hidden" id="terminal-loader">
+            <div class="loader-spinner"></div>
+            <span class="loader-text">RENDERING SUBPIXELS...</span>
+          </div>
+          <pre class="terminal-content" id="terminal-pre"></pre>
+        </div>
+      </div>
+
+      <!-- Action Floating Dock -->
+      <div class="terminal-dock">
+        <button type="button" class="dock-btn" id="btn-copy-plain" title="Copy clean characters without colors">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span>Copy ASCII</span>
+        </button>
+
+        <button type="button" class="dock-btn" id="btn-copy-ansi" title="Copy raw 24-bit ANSI TrueColor escape codes">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span>Copy ANSI</span>
+        </button>
+
+        <button type="button" class="dock-btn" id="btn-copy-html" title="Copy formatted HTML spans">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span>Copy HTML</span>
+        </button>
+
+        <div class="dock-divider"></div>
+
+        <button type="button" class="dock-btn" id="btn-download-txt" title="Download .txt plain text file">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>.TXT</span>
+        </button>
+
+        <button type="button" class="dock-btn" id="btn-download-ans" title="Download .ans ANSI color file">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>.ANS</span>
+        </button>
+
+        <button type="button" class="dock-btn" id="btn-download-png" title="Rasterize terminal as high-res PNG image">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>PNG Snapshot</span>
+        </button>
+
+        <div class="dock-divider"></div>
+
+        <button type="button" class="dock-btn highlight" id="btn-fullscreen" title="Toggle Fullscreen Mode">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          <span>Fullscreen</span>
+        </button>
+      </div>
+
+      <!-- Generated Terminal CLI Command Card -->
+      <div class="cli-command-card">
+        <div class="cli-header">
+          <div class="cli-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            <span>macOS Terminal CLI Command</span>
+          </div>
+          <button type="button" class="btn-copy-code" id="btn-copy-cli" title="Copy CLI Command">Copy Command</button>
+        </div>
+        <div class="cli-code-wrapper">
+          <code id="cli-command-text">python3 termiart.py sample_test.png --style halfblock</code>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Notification Toast Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Offscreen Canvas for Snapshot Rasterization -->
+  <canvas id="export-canvas" class="hidden"></canvas>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
