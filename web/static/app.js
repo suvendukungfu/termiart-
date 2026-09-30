@@ -1,17 +1,20 @@
 /**
- * TermiArt Web Studio — Client-Side Application Controller
+ * TERMIART STUDIO — CLIENT-SIDE CREATIVE CONTROLLER
+ * Inspired by Awwwards Wonder Games: Playful, Tactile, Living, Editorial
  */
 
 (() => {
   "use strict";
 
-  // Application State
+  // =========================================================================
+  // 1. APPLICATION STATE
+  // =========================================================================
   const state = {
     file: null,
     imageBase64: null,
-    sampleName: "sample_test.png",
+    sampleName: "portrait",
     style: "halfblock",
-    theme: "original",
+    theme: "cyberpunk",
     preset: "",
     width: 100,
     contrast: 1.0,
@@ -22,6 +25,7 @@
     edgeEnhance: false,
     invert: false,
     color: true,
+    crt: false,
     fontSize: 11,
     isAnimating: false,
     animFrame: 0,
@@ -29,10 +33,101 @@
     animFps: 15,
     animIntervalId: null,
     lastRenderResult: null,
+    soundEnabled: true,
+    audioCtx: null,
+    isSurpriseScrambling: false,
   };
 
-  // DOM Element References
+  // =========================================================================
+  // 2. RETRO WEB AUDIO SYNTHESIZER (No external files needed)
+  // =========================================================================
+  const audio = {
+    init() {
+      if (!state.audioCtx && typeof window.AudioContext !== "undefined") {
+        try {
+          state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+          // Audio not allowed or supported
+        }
+      }
+      if (state.audioCtx && state.audioCtx.state === "suspended") {
+        state.audioCtx.resume();
+      }
+    },
+
+    playTone(freq, type = "sine", duration = 0.08, gainVal = 0.05) {
+      if (!state.soundEnabled) return;
+      this.init();
+      if (!state.audioCtx) return;
+      try {
+        const osc = state.audioCtx.createOscillator();
+        const gain = state.audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, state.audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, state.audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, state.audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(state.audioCtx.destination);
+        osc.start();
+        osc.stop(state.audioCtx.currentTime + duration);
+      } catch (e) {}
+    },
+
+    click() {
+      this.playTone(800, "sine", 0.04, 0.04);
+    },
+
+    success() {
+      if (!state.soundEnabled) return;
+      this.init();
+      if (!state.audioCtx) return;
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      notes.forEach((freq, idx) => {
+        setTimeout(() => this.playTone(freq, "triangle", 0.1, 0.05), idx * 60);
+      });
+    },
+
+    surprise() {
+      if (!state.soundEnabled) return;
+      this.init();
+      if (!state.audioCtx) return;
+      const notes = [329.63, 440.00, 554.37, 659.25, 880.00];
+      notes.forEach((freq, idx) => {
+        setTimeout(() => this.playTone(freq, "square", 0.06, 0.03), idx * 45);
+      });
+    },
+
+    easterEgg() {
+      if (!state.soundEnabled) return;
+      this.init();
+      if (!state.audioCtx) return;
+      const notes = [440, 554, 659, 880, 1108, 1318];
+      notes.forEach((freq, idx) => {
+        setTimeout(() => this.playTone(freq, "sawtooth", 0.14, 0.04), idx * 70);
+      });
+    }
+  };
+
+  // =========================================================================
+  // 3. DOM ELEMENT REFERENCES
+  // =========================================================================
   const dom = {
+    // Navigation
+    btnSound: document.getElementById("btn-sound"),
+    soundIcon: document.getElementById("sound-icon"),
+    btnNavRandom: document.getElementById("btn-nav-random"),
+    btnNavUpload: document.getElementById("btn-nav-upload"),
+    brandLogo: document.getElementById("brand-logo"),
+    logoText: document.getElementById("logo-text"),
+    logoGlyph: document.getElementById("logo-glyph"),
+
+    // Hero Section
+    btnHeroDrop: document.getElementById("btn-hero-drop"),
+    btnHeroRandom: document.getElementById("btn-hero-random"),
+    btnHeroDemo: document.getElementById("btn-hero-demo"),
+    starterCards: document.querySelectorAll(".starter-card"),
+
+    // Source Card & Dropzone
     dropzone: document.getElementById("dropzone"),
     fileInput: document.getElementById("file-input"),
     dropzonePrompt: document.getElementById("dropzone-prompt"),
@@ -41,12 +136,71 @@
     thumbName: document.getElementById("thumb-name"),
     btnRemoveImage: document.getElementById("btn-remove-image"),
 
+    // Presets
     presetsContainer: document.getElementById("presets-container"),
+
+    // Mini Shell Easter Egg
+    shellForm: document.getElementById("shell-form"),
+    shellInput: document.getElementById("shell-input"),
+    shellOutput: document.getElementById("shell-output"),
+
+    // Terminal Stage
+    terminalWindow: document.getElementById("terminal-window"),
+    terminalViewport: document.getElementById("terminal-viewport"),
+    terminalPre: document.getElementById("terminal-pre"),
+    terminalLoader: document.getElementById("terminal-loader"),
+    loaderTicker: document.getElementById("loader-ticker"),
+    terminalTitleText: document.getElementById("terminal-title-text"),
+    telCols: document.getElementById("tel-cols"),
+    telRows: document.getElementById("tel-rows"),
+    telTime: document.getElementById("tel-time"),
+    telStatusLabel: document.getElementById("tel-status-label"),
+    decoderOverlay: document.getElementById("decoder-overlay"),
+    decoderLogs: document.getElementById("decoder-logs"),
+
+    // Window Dots
+    dotClose: document.getElementById("dot-close"),
+    dotMin: document.getElementById("dot-min"),
+    btnFullscreenDot: document.getElementById("btn-fullscreen-dot"),
+
+    // Badges in stage footer
+    badgeRenderer: document.getElementById("badge-renderer"),
+    badgeTheme: document.getElementById("badge-theme"),
+    badgeFps: document.getElementById("badge-fps"),
+
+    // Stage Action Bar
+    btnCopyMain: document.getElementById("btn-copy-main"),
+    btnCopyLabel: document.getElementById("btn-copy-label"),
+    btnShareModal: document.getElementById("btn-share-modal"),
+    btnDownloadPng: document.getElementById("btn-download-png"),
+    btnToggleAnim: document.getElementById("btn-toggle-anim"),
+    animIcon: document.getElementById("anim-icon"),
+    animBtnLabel: document.getElementById("anim-btn-label"),
+    btnRandomRoll: document.getElementById("btn-random-roll"),
+    btnFullscreen: document.getElementById("btn-fullscreen"),
+
+    // CLI Snippet
+    cliCommandText: document.getElementById("cli-command-text"),
+    btnCopyCli: document.getElementById("btn-copy-cli"),
+
+    // Controls Panel
     stylesContainer: document.getElementById("styles-container"),
     themesContainer: document.getElementById("themes-container"),
-
     sliderWidth: document.getElementById("slider-width"),
     valWidth: document.getElementById("val-width"),
+    sliderDensity: document.getElementById("slider-density"),
+    valDensity: document.getElementById("val-density"),
+
+    // Animation Controls
+    animTypeSelect: document.getElementById("anim-type-select"),
+    animLiveBadge: document.getElementById("anim-live-badge"),
+    sliderFps: document.getElementById("slider-fps"),
+    valFps: document.getElementById("val-fps"),
+
+    // Advanced Accordion & Sliders
+    btnToggleAdvanced: document.getElementById("btn-toggle-advanced"),
+    advancedDrawer: document.getElementById("advanced-drawer"),
+    btnResetSliders: document.getElementById("btn-reset-sliders"),
     sliderContrast: document.getElementById("slider-contrast"),
     valContrast: document.getElementById("val-contrast"),
     sliderBrightness: document.getElementById("slider-brightness"),
@@ -55,63 +209,54 @@
     valSharpness: document.getElementById("val-sharpness"),
     sliderGamma: document.getElementById("slider-gamma"),
     valGamma: document.getElementById("val-gamma"),
-    sliderDensity: document.getElementById("slider-density"),
-    valDensity: document.getElementById("val-density"),
-    btnResetSliders: document.getElementById("btn-reset-sliders"),
-
     checkEdge: document.getElementById("check-edge"),
     checkInvert: document.getElementById("check-invert"),
     checkColor: document.getElementById("check-color"),
-
-    // Animation
-    animTypeSelect: document.getElementById("anim-type-select"),
-    btnToggleAnim: document.getElementById("btn-toggle-anim"),
-    playIcon: document.getElementById("play-icon"),
-    pauseIcon: document.getElementById("pause-icon"),
-    animBtnLabel: document.getElementById("anim-btn-label"),
-    animLiveBadge: document.getElementById("anim-live-badge"),
-    sliderFps: document.getElementById("slider-fps"),
-    valFps: document.getElementById("val-fps"),
-
-    // Terminal
-    terminalWindow: document.getElementById("terminal-window"),
-    terminalPre: document.getElementById("terminal-pre"),
-    terminalLoader: document.getElementById("terminal-loader"),
-    terminalTitleText: document.getElementById("terminal-title-text"),
-    telCols: document.getElementById("tel-cols"),
-    telRows: document.getElementById("tel-rows"),
-    telChars: document.getElementById("tel-chars"),
-    telTime: document.getElementById("tel-time"),
-
-    // Action buttons
-    btnCopyPlain: document.getElementById("btn-copy-plain"),
-    btnCopyAnsi: document.getElementById("btn-copy-ansi"),
-    btnCopyHtml: document.getElementById("btn-copy-html"),
-    btnDownloadTxt: document.getElementById("btn-download-txt"),
-    btnDownloadAns: document.getElementById("btn-download-ans"),
-    btnDownloadPng: document.getElementById("btn-download-png"),
-    btnFullscreen: document.getElementById("btn-fullscreen"),
-    btnFullscreenDot: document.getElementById("btn-fullscreen-dot"),
-    btnCopyCli: document.getElementById("btn-copy-cli"),
-    cliCommandText: document.getElementById("cli-command-text"),
-
-    // Header buttons
-    toggleCrtBtn: document.getElementById("toggle-crt-btn"),
+    checkCrt: document.getElementById("check-crt"),
+    crtOverlay: document.getElementById("crt-overlay"),
     btnFontDown: document.getElementById("btn-font-down"),
     btnFontUp: document.getElementById("btn-font-up"),
-    btnLoadDemo: document.getElementById("btn-load-demo"),
-    btnRandomRoll: document.getElementById("btn-random-roll"),
+    valFontSize: document.getElementById("val-font-size"),
 
+    // Modals
+    modalCopy: document.getElementById("modal-copy"),
+    btnCloseCopy: document.getElementById("btn-close-copy"),
+    btnCopyPlainAction: document.getElementById("btn-copy-plain-action"),
+    btnCopyAnsiAction: document.getElementById("btn-copy-ansi-action"),
+    btnCopyMdAction: document.getElementById("btn-copy-md-action"),
+    btnCopyHtmlAction: document.getElementById("btn-copy-html-action"),
+
+    modalShare: document.getElementById("modal-share"),
+    btnCloseShare: document.getElementById("btn-close-share"),
+    btnShareWhatsappImg: document.getElementById("btn-share-whatsapp-img"),
+    btnShareWhatsappTxt: document.getElementById("btn-share-whatsapp-txt"),
+    btnShareDiscordMd: document.getElementById("btn-share-discord-md"),
+    btnShareDiscordPng: document.getElementById("btn-share-discord-png"),
+    btnShareSlackCode: document.getElementById("btn-share-slack-code"),
+    btnShareSlackPng: document.getElementById("btn-share-slack-png"),
+    btnShareXIntent: document.getElementById("btn-share-x-intent"),
+    btnShareXCaption: document.getElementById("btn-share-x-caption"),
+    btnModalDlPng: document.getElementById("btn-modal-dl-png"),
+    btnModalDlTxt: document.getElementById("btn-modal-dl-txt"),
+    btnModalDlAns: document.getElementById("btn-modal-dl-ans"),
+    btnModalDlHtml: document.getElementById("btn-modal-dl-html"),
+
+    modalEasterEgg: document.getElementById("modal-easter-egg"),
+    btnDismissEgg: document.getElementById("btn-dismiss-egg"),
+
+    // Utilities
     toastContainer: document.getElementById("toast-container"),
     exportCanvas: document.getElementById("export-canvas"),
   };
 
-  // Toast Notification System
+  // =========================================================================
+  // 4. TOAST NOTIFICATION SYSTEM
+  // =========================================================================
   function showToast(message, type = "success") {
     const toast = document.createElement("div");
-    toast.className = `toast ${type === "success" ? "toast-success" : ""}`;
+    toast.className = `toast ${type === "success" ? "toast-success" : "toast-error"}`;
     toast.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
       <span>${message}</span>
@@ -119,24 +264,32 @@
     dom.toastContainer.appendChild(toast);
     setTimeout(() => {
       toast.style.opacity = "0";
-      toast.style.transform = "translateY(8px)";
-      setTimeout(() => toast.remove(), 250);
-    }, 2400);
+      toast.style.transform = "translateY(10px)";
+      setTimeout(() => toast.remove(), 300);
+    }, 2800);
   }
 
-  // Debounced API Render Trigger
+  // =========================================================================
+  // 5. CORE RENDERING ENGINE CALL
+  // =========================================================================
   let renderDebounceTimer = null;
-  function scheduleRender(delay = 120) {
-    if (state.isAnimating) {
-      // Don't interrupt animation loop
-      return;
+
+  async function triggerRender(immediate = false) {
+    if (state.isAnimating) return; // Don't interrupt animation loop
+
+    if (!immediate) {
+      clearTimeout(renderDebounceTimer);
+      renderDebounceTimer = setTimeout(() => executeRender(), 180);
+    } else {
+      clearTimeout(renderDebounceTimer);
+      await executeRender();
     }
-    clearTimeout(renderDebounceTimer);
-    renderDebounceTimer = setTimeout(triggerRender, delay);
   }
 
-  async function triggerRender() {
+  async function executeRender() {
     dom.terminalLoader.classList.remove("hidden");
+    dom.telStatusLabel.textContent = "COMPUTING";
+    rotateTicker();
 
     const formData = new FormData();
     if (state.file) {
@@ -144,14 +297,12 @@
     } else if (state.imageBase64) {
       formData.append("image_base64", state.imageBase64);
     } else {
-      formData.append("sample_name", state.sampleName);
+      formData.append("sample_name", state.sampleName || "portrait");
     }
 
     formData.append("style", state.style);
     formData.append("theme", state.theme);
-    if (state.preset) {
-      formData.append("preset", state.preset);
-    }
+    if (state.preset) formData.append("preset", state.preset);
     formData.append("width", state.width);
     formData.append("contrast", state.contrast);
     formData.append("brightness", state.brightness);
@@ -169,8 +320,8 @@
       });
 
       if (!resp.ok) {
-        const err = await resp.json();
-        throw new Error(err.detail || "Render failed");
+        const errJson = await resp.json().catch(() => ({}));
+        throw new Error(errJson.detail || "Server error while rendering terminal art.");
       }
 
       const data = await resp.json();
@@ -178,421 +329,362 @@
 
       // Update terminal view
       dom.terminalPre.innerHTML = data.html;
+
+      // Telemetry update
+      dom.telCols.textContent = `COLS: ${data.stats.cols}`;
+      dom.telRows.textContent = `ROWS: ${data.stats.rows}`;
+      dom.telTime.textContent = `${data.stats.render_time_ms}ms`;
+      dom.telStatusLabel.textContent = "READY";
+
+      // Status badges
+      dom.badgeRenderer.textContent = `RENDERER: ${data.stats.style.toUpperCase()}`;
+      dom.badgeTheme.textContent = `THEME: ${data.stats.theme.toUpperCase()}`;
+      dom.terminalTitleText.textContent = `termiart -s ${data.stats.style} -t ${data.stats.theme} (${data.stats.cols} cols)`;
+
+      // CLI Command Snippet
       dom.cliCommandText.textContent = data.cli_command;
 
-      // Update telemetry
-      dom.telCols.textContent = `Cols: ${data.stats.cols}`;
-      dom.telRows.textContent = `Rows: ${data.stats.rows}`;
-      dom.telChars.textContent = `Chars: ${data.stats.characters.toLocaleString()}`;
-      dom.telTime.textContent = `Time: ${data.stats.render_time_ms} ms`;
-      dom.terminalTitleText.textContent = `termiart -s ${data.stats.style} -t ${data.stats.theme} (${data.stats.cols}×${data.stats.rows})`;
-
+      audio.click();
     } catch (err) {
-      console.error("Render error:", err);
-      showToast(`Render failed: ${err.message}`, "error");
+      console.error(err);
+      dom.terminalPre.innerHTML = `<span style="color:#ff007f;">Error: ${err.message}</span>`;
+      dom.telStatusLabel.textContent = "HALTED";
+      showToast(err.message, "error");
     } finally {
       dom.terminalLoader.classList.add("hidden");
     }
   }
 
-  // Preset Definitions Map for Instant UI Update
-  const PRESET_MAP = {
-    cyberpunk: {
-      style: "cyberpunk",
-      theme: "cyberpunk",
-      contrast: 1.4,
-      brightness: 1.1,
-      sharpness: 1.4,
-      edgeEnhance: false,
-    },
-    matrix: {
-      style: "matrix",
-      theme: "matrix",
-      contrast: 1.35,
-      brightness: 1.05,
-      edgeEnhance: true,
-    },
-    anime: {
-      style: "halfblock",
-      theme: "anime",
-      contrast: 1.25,
-      brightness: 1.12,
-      sharpness: 1.35,
-      edgeEnhance: true,
-    },
-    fire: {
-      style: "dense_ascii",
-      theme: "fire",
-      contrast: 1.45,
-      brightness: 1.1,
-      edgeEnhance: false,
-    },
-    ocean: {
-      style: "unicode",
-      theme: "ocean",
-      contrast: 1.3,
-      brightness: 1.05,
-      edgeEnhance: false,
-    },
-    purple_neon: {
-      style: "halfblock",
-      theme: "purple_neon",
-      contrast: 1.35,
-      brightness: 1.08,
-      edgeEnhance: false,
-    },
-  };
-
-  function applyPreset(presetKey) {
-    state.preset = presetKey;
-
-    // Update preset pills active state
-    document.querySelectorAll(".preset-pill").forEach(pill => {
-      pill.classList.toggle("active", pill.dataset.preset === presetKey);
-    });
-
-    if (presetKey && PRESET_MAP[presetKey]) {
-      const p = PRESET_MAP[presetKey];
-      state.style = p.style;
-      state.theme = p.theme;
-      state.contrast = p.contrast ?? 1.0;
-      state.brightness = p.brightness ?? 1.0;
-      state.sharpness = p.sharpness ?? 1.0;
-      state.edgeEnhance = p.edgeEnhance ?? false;
-
-      // Update UI inputs
-      syncControlsToState();
-    }
-
-    scheduleRender(0);
+  // Playful loading ticker messages
+  const tickerMessages = [
+    "COMPILING PIXELS...",
+    "CONVERTING PHOTONS...",
+    "NEGOTIATING WITH ASCII...",
+    "MAPPING SUBPIXEL MATRICES...",
+    "APPLYING TRUECOLOR ANIS...",
+    "GENERATING ARTIFACT..."
+  ];
+  let tickerIndex = 0;
+  function rotateTicker() {
+    dom.loaderTicker.textContent = tickerMessages[tickerIndex % tickerMessages.length];
+    tickerIndex++;
   }
 
-  function syncControlsToState() {
-    // Style radio
-    const styleRadio = document.querySelector(`input[name="renderer-style"][value="${state.style}"]`);
-    if (styleRadio) {
-      styleRadio.checked = true;
-      document.querySelectorAll(".style-card").forEach(c => c.classList.remove("active"));
-      styleRadio.closest(".style-card")?.classList.add("active");
+  // =========================================================================
+  // 6. SURPRISE ME (RANDOMIZE) WITH RETRO DECODER ANIMATION
+  // =========================================================================
+  const allStyles = ["halfblock", "dense_ascii", "braille", "matrix", "ascii", "unicode", "cyberpunk", "rgb"];
+  const allThemes = ["original", "cyberpunk", "matrix", "rainbow", "fire", "ocean", "purple_neon", "monochrome", "anime"];
+
+  async function triggerSurpriseMe() {
+    if (state.isSurpriseScrambling) return;
+    state.isSurpriseScrambling = true;
+
+    audio.surprise();
+    dom.decoderOverlay.classList.remove("hidden");
+
+    // Scramble log animation
+    const steps = [
+      "INITIATING QUANTUM DECODER...",
+      "SAMPLING ENTROPY SEED [0x7F4A]...",
+      "MUTATING GLYPH MATRICES...",
+      "STYLE DISCOVERED: SYNCHRONIZING..."
+    ];
+
+    for (let i = 0; i < steps.length; i++) {
+      dom.decoderLogs.innerHTML += `<p class="log-line ${i === steps.length - 1 ? 'highlight' : ''}">${steps[i]}</p>`;
+      await new Promise(r => setTimeout(r, 120));
     }
 
-    // Theme radio
-    const themeRadio = document.querySelector(`input[name="color-theme"][value="${state.theme}"]`);
-    if (themeRadio) {
-      themeRadio.checked = true;
-      document.querySelectorAll(".theme-chip").forEach(c => c.classList.remove("active"));
-      themeRadio.closest(".theme-chip")?.classList.add("active");
-    }
+    // Pick random combination
+    const randomStyle = allStyles[Math.floor(Math.random() * allStyles.length)];
+    const randomTheme = allThemes[Math.floor(Math.random() * allThemes.length)];
+    const randomDensity = +(0.8 + Math.random() * 0.5).toFixed(2);
+    const randomContrast = +(0.9 + Math.random() * 0.6).toFixed(2);
+
+    state.style = randomStyle;
+    state.theme = randomTheme;
+    state.density = randomDensity;
+    state.contrast = randomContrast;
+    state.preset = "";
+
+    // Sync UI elements
+    syncUIWithState();
+
+    // Re-render
+    await executeRender();
+
+    setTimeout(() => {
+      dom.decoderOverlay.classList.add("hidden");
+      dom.decoderLogs.innerHTML = "";
+      state.isSurpriseScrambling = false;
+      showToast(`✨ Surprise! ${randomStyle.toUpperCase()} in ${randomTheme.toUpperCase()}`);
+      audio.success();
+    }, 200);
+  }
+
+  function syncUIWithState() {
+    // Styles
+    document.querySelectorAll(".renderer-tile").forEach(tile => {
+      const val = tile.querySelector("input").value;
+      if (val === state.style) {
+        tile.classList.add("active");
+        tile.querySelector("input").checked = true;
+      } else {
+        tile.classList.remove("active");
+      }
+    });
+
+    // Themes
+    document.querySelectorAll(".palette-chip").forEach(chip => {
+      const val = chip.querySelector("input").value;
+      if (val === state.theme) {
+        chip.classList.add("active");
+        chip.querySelector("input").checked = true;
+      } else {
+        chip.classList.remove("active");
+      }
+    });
 
     // Sliders
-    dom.sliderWidth.value = state.width;
-    dom.valWidth.textContent = state.width;
-
-    dom.sliderContrast.value = state.contrast;
-    dom.valContrast.textContent = `${Number(state.contrast).toFixed(2)}×`;
-
-    dom.sliderBrightness.value = state.brightness;
-    dom.valBrightness.textContent = `${Number(state.brightness).toFixed(2)}×`;
-
-    dom.sliderSharpness.value = state.sharpness;
-    dom.valSharpness.textContent = `${Number(state.sharpness).toFixed(2)}×`;
-
-    dom.sliderGamma.value = state.gamma;
-    dom.valGamma.textContent = Number(state.gamma).toFixed(2);
-
     dom.sliderDensity.value = state.density;
-    dom.valDensity.textContent = `${Number(state.density).toFixed(2)}×`;
-
-    // Toggles
-    dom.checkEdge.checked = state.edgeEnhance;
-    dom.checkInvert.checked = state.invert;
-    dom.checkColor.checked = state.color;
+    dom.valDensity.textContent = `${state.density.toFixed(2)}×`;
+    dom.sliderContrast.value = state.contrast;
+    dom.valContrast.textContent = `${state.contrast.toFixed(2)}×`;
   }
 
-  // Setup Event Listeners
-  function initEventListeners() {
-    // 1. Dropzone & File Upload
-    dom.dropzone.addEventListener("click", () => dom.fileInput.click());
+  // =========================================================================
+  // 7. DEMO / STARTER IMAGES
+  // =========================================================================
+  const sampleMeta = {
+    portrait: { style: "halfblock", theme: "cyberpunk", name: "portrait.png" },
+    anime: { style: "dense_ascii", theme: "anime", name: "anime.png" },
+    landscape: { style: "halfblock", theme: "fire", name: "landscape.png" },
+    logo: { style: "braille", theme: "matrix", name: "logo.png" },
+  };
 
-    dom.fileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) handleLoadedFile(file);
+  function loadSample(sampleKey) {
+    const meta = sampleMeta[sampleKey] || sampleMeta.portrait;
+    state.file = null;
+    state.imageBase64 = null;
+    state.sampleName = sampleKey;
+    state.style = meta.style;
+    state.theme = meta.theme;
+    state.preset = "";
+
+    // Update thumbnail in source card
+    dom.imageThumbnail.src = `/api/sample/${sampleKey}`;
+    dom.thumbName.textContent = meta.name;
+    dom.thumbnailWrapper.classList.remove("hidden");
+    dom.dropzonePrompt.classList.add("hidden");
+
+    // Highlight starter card
+    dom.starterCards.forEach(card => {
+      if (card.dataset.sample === sampleKey) card.classList.add("active");
+      else card.classList.remove("active");
     });
 
-    dom.dropzone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      dom.dropzone.classList.add("dragover");
-    });
-
-    dom.dropzone.addEventListener("dragleave", () => {
-      dom.dropzone.classList.remove("dragover");
-    });
-
-    dom.dropzone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dom.dropzone.classList.remove("dragover");
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        handleLoadedFile(e.dataTransfer.files[0]);
-      }
-    });
-
-    // Paste Image from Clipboard
-    window.addEventListener("paste", (e) => {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-      for (const item of items) {
-        if (item.type.indexOf("image") === 0) {
-          const blob = item.getAsFile();
-          handleLoadedFile(blob, "pasted_image.png");
-          showToast("Image pasted from clipboard!");
-          break;
-        }
-      }
-    });
-
-    dom.btnRemoveImage.addEventListener("click", (e) => {
-      e.stopPropagation();
-      state.file = null;
-      state.imageBase64 = null;
-      dom.thumbnailWrapper.classList.add("hidden");
-      dom.dropzonePrompt.classList.remove("hidden");
-      scheduleRender(0);
-    });
-
-    // 2. Presets Click
-    dom.presetsContainer.addEventListener("click", (e) => {
-      const btn = e.target.closest(".preset-pill");
-      if (btn) {
-        applyPreset(btn.dataset.preset);
-      }
-    });
-
-    // 3. Renderer Style Radio Change
-    dom.stylesContainer.addEventListener("change", (e) => {
-      if (e.target.name === "renderer-style") {
-        state.style = e.target.value;
-        state.preset = "";
-        document.querySelectorAll(".style-card").forEach(c => c.classList.remove("active"));
-        e.target.closest(".style-card")?.classList.add("active");
-        document.querySelectorAll(".preset-pill").forEach(p => p.classList.remove("active"));
-        scheduleRender(0);
-      }
-    });
-
-    // 4. Color Theme Radio Change
-    dom.themesContainer.addEventListener("change", (e) => {
-      if (e.target.name === "color-theme") {
-        state.theme = e.target.value;
-        state.preset = "";
-        document.querySelectorAll(".theme-chip").forEach(c => c.classList.remove("active"));
-        e.target.closest(".theme-chip")?.classList.add("active");
-        scheduleRender(0);
-      }
-    });
-
-    // 5. Sliders Input Events
-    dom.sliderWidth.addEventListener("input", (e) => {
-      state.width = parseInt(e.target.value, 10);
-      dom.valWidth.textContent = state.width;
-      scheduleRender(120);
-    });
-
-    dom.sliderContrast.addEventListener("input", (e) => {
-      state.contrast = parseFloat(e.target.value);
-      dom.valContrast.textContent = `${state.contrast.toFixed(2)}×`;
-      scheduleRender(120);
-    });
-
-    dom.sliderBrightness.addEventListener("input", (e) => {
-      state.brightness = parseFloat(e.target.value);
-      dom.valBrightness.textContent = `${state.brightness.toFixed(2)}×`;
-      scheduleRender(120);
-    });
-
-    dom.sliderSharpness.addEventListener("input", (e) => {
-      state.sharpness = parseFloat(e.target.value);
-      dom.valSharpness.textContent = `${state.sharpness.toFixed(2)}×`;
-      scheduleRender(120);
-    });
-
-    dom.sliderGamma.addEventListener("input", (e) => {
-      state.gamma = parseFloat(e.target.value);
-      dom.valGamma.textContent = state.gamma.toFixed(2);
-      scheduleRender(120);
-    });
-
-    dom.sliderDensity.addEventListener("input", (e) => {
-      state.density = parseFloat(e.target.value);
-      dom.valDensity.textContent = `${state.density.toFixed(2)}×`;
-      scheduleRender(120);
-    });
-
-    // Reset Sliders
-    dom.btnResetSliders.addEventListener("click", () => {
-      state.contrast = 1.0;
-      state.brightness = 1.0;
-      state.sharpness = 1.0;
-      state.gamma = 1.0;
-      state.density = 1.0;
-      state.edgeEnhance = false;
-      state.invert = false;
-      syncControlsToState();
-      scheduleRender(0);
-      showToast("Adjustments reset to default");
-    });
-
-    // Toggles
-    dom.checkEdge.addEventListener("change", (e) => {
-      state.edgeEnhance = e.target.checked;
-      scheduleRender(0);
-    });
-
-    dom.checkInvert.addEventListener("change", (e) => {
-      state.invert = e.target.checked;
-      scheduleRender(0);
-    });
-
-    dom.checkColor.addEventListener("change", (e) => {
-      state.color = e.target.checked;
-      scheduleRender(0);
-    });
-
-    // 6. Animation Engine Controls
-    dom.btnToggleAnim.addEventListener("click", toggleAnimation);
-
-    dom.animTypeSelect.addEventListener("change", (e) => {
-      state.animType = e.target.value;
-      if (state.isAnimating) {
-        state.animFrame = 0;
-      }
-    });
-
-    dom.sliderFps.addEventListener("input", (e) => {
-      state.animFps = parseInt(e.target.value, 10);
-      dom.valFps.textContent = `${state.animFps} FPS`;
-      if (state.isAnimating) {
-        clearInterval(state.animIntervalId);
-        startAnimationLoop();
-      }
-    });
-
-    // 7. Action Bar Clipboard & Downloads
-    dom.btnCopyPlain.addEventListener("click", () => {
-      if (!state.lastRenderResult?.plain) return;
-      navigator.clipboard.writeText(state.lastRenderResult.plain)
-        .then(() => showToast("Copied Plain ASCII to Clipboard!"))
-        .catch(() => showToast("Copy failed", "error"));
-    });
-
-    dom.btnCopyAnsi.addEventListener("click", () => {
-      if (!state.lastRenderResult?.ansi) return;
-      navigator.clipboard.writeText(state.lastRenderResult.ansi)
-        .then(() => showToast("Copied ANSI TrueColor codes to Clipboard!"))
-        .catch(() => showToast("Copy failed", "error"));
-    });
-
-    dom.btnCopyHtml.addEventListener("click", () => {
-      if (!state.lastRenderResult?.html) return;
-      navigator.clipboard.writeText(state.lastRenderResult.html)
-        .then(() => showToast("Copied HTML markup to Clipboard!"))
-        .catch(() => showToast("Copy failed", "error"));
-    });
-
-    dom.btnDownloadTxt.addEventListener("click", () => {
-      if (!state.lastRenderResult?.plain) return;
-      downloadFile(state.lastRenderResult.plain, "termiart_artwork.txt", "text/plain");
-      showToast("Downloaded .txt file!");
-    });
-
-    dom.btnDownloadAns.addEventListener("click", () => {
-      if (!state.lastRenderResult?.ansi) return;
-      downloadFile(state.lastRenderResult.ansi, "termiart_artwork.ans", "text/plain");
-      showToast("Downloaded .ans ANSI file!");
-    });
-
-    dom.btnDownloadPng.addEventListener("click", exportTerminalAsPng);
-
-    dom.btnCopyCli.addEventListener("click", () => {
-      const cmd = dom.cliCommandText.textContent;
-      navigator.clipboard.writeText(cmd)
-        .then(() => showToast("CLI command copied to clipboard!"))
-        .catch(() => showToast("Copy failed", "error"));
-    });
-
-    // 8. Fullscreen & Font Sizing
-    dom.btnFullscreen.addEventListener("click", toggleFullscreen);
-    dom.btnFullscreenDot.addEventListener("click", toggleFullscreen);
-
-    dom.btnFontDown.addEventListener("click", () => {
-      state.fontSize = Math.max(6, state.fontSize - 1);
-      updateTerminalFontSize();
-    });
-
-    dom.btnFontUp.addEventListener("click", () => {
-      state.fontSize = Math.min(24, state.fontSize + 1);
-      updateTerminalFontSize();
-    });
-
-    dom.toggleCrtBtn.addEventListener("click", () => {
-      document.body.classList.toggle("crt-active");
-      dom.toggleCrtBtn.classList.toggle("active");
-      showToast(document.body.classList.contains("crt-active") ? "CRT Scanlines Enabled" : "CRT Scanlines Disabled");
-    });
-
-    dom.btnLoadDemo.addEventListener("click", () => {
-      state.file = null;
-      state.imageBase64 = null;
-      dom.thumbnailWrapper.classList.add("hidden");
-      dom.dropzonePrompt.classList.remove("hidden");
-      scheduleRender(0);
-      showToast("Demo image loaded!");
-    });
-
-    dom.btnRandomRoll.addEventListener("click", rollRandomStyle);
-
-    // Keyboard Shortcuts
-    window.addEventListener("keydown", (e) => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
-
-      if (e.code === "Space") {
-        e.preventDefault();
-        toggleAnimation();
-      } else if (e.code === "KeyR") {
-        rollRandomStyle();
-      } else if (e.code === "KeyF") {
-        toggleFullscreen();
-      } else if (e.code === "Escape" && dom.terminalWindow.classList.contains("fullscreen")) {
-        toggleFullscreen();
-      }
-    });
+    syncUIWithState();
+    triggerRender(true);
   }
 
-  function handleLoadedFile(file, overrideName) {
+  // =========================================================================
+  // 8. IMAGE UPLOAD & DRAG/DROP
+  // =========================================================================
+  function handleFileSelected(file) {
+    if (!file || !file.type.startsWith("image/")) {
+      showToast("Please provide a valid image file (PNG, JPG, WebP)", "error");
+      return;
+    }
+
     state.file = file;
-    const name = overrideName || file.name || "image.png";
-    dom.thumbName.textContent = name;
+    state.sampleName = null;
+    state.imageBase64 = null;
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      state.imageBase64 = e.target.result;
       dom.imageThumbnail.src = e.target.result;
-      dom.dropzonePrompt.classList.add("hidden");
+      dom.thumbName.textContent = file.name;
       dom.thumbnailWrapper.classList.remove("hidden");
-      scheduleRender(0);
+      dom.dropzonePrompt.classList.add("hidden");
+      state.imageBase64 = e.target.result;
+
+      // Scroll smoothly to playground if on hero
+      document.getElementById("playground").scrollIntoView({ behavior: "smooth" });
+      triggerRender(true);
+      showToast(`Loaded ${file.name}`);
     };
     reader.readAsDataURL(file);
   }
 
-  function updateTerminalFontSize() {
-    document.documentElement.style.setProperty("--terminal-font-size", `${state.fontSize}px`);
-    showToast(`Font size: ${state.fontSize}px`);
+  // =========================================================================
+  // 9. COPY EXPERIENCE (THE COPY CENTER)
+  // =========================================================================
+  async function copyToClipboard(text, successMsg = "✓ COPIED TO CLIPBOARD") {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+      audio.success();
+      showToast(successMsg);
+
+      // Flash CTA button
+      dom.btnCopyMain.classList.add("copied");
+      dom.btnCopyLabel.textContent = "COPIED!";
+      setTimeout(() => {
+        dom.btnCopyMain.classList.remove("copied");
+        dom.btnCopyLabel.textContent = "COPY ART";
+      }, 1800);
+    } catch (e) {
+      console.error(e);
+      showToast("Clipboard copy failed. Please select and copy manually.", "error");
+    }
   }
 
-  function toggleFullscreen() {
-    const isFull = dom.terminalWindow.classList.toggle("fullscreen");
-    dom.btnFullscreen.classList.toggle("active", isFull);
+  function getMarkdownOutput() {
+    if (!state.lastRenderResult) return "";
+    return "```ansi\n" + (state.lastRenderResult.ansi || state.lastRenderResult.plain) + "\n```";
   }
 
-  // Live Animation Loop
+  function getHtmlOutput() {
+    if (!state.lastRenderResult) return "";
+    return `<!DOCTYPE html><html><body style="background:#090a10;color:#fff;font-family:monospace;white-space:pre;">\n<pre>${state.lastRenderResult.html}</pre>\n</body></html>`;
+  }
+
+  // =========================================================================
+  // 10. EXPORT & DOWNLOAD SYSTEM (PNG Canvas Rasterizer)
+  // =========================================================================
+  function downloadBlob(content, filename, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast(`Downloaded ${filename}`);
+    audio.success();
+  }
+
+  async function rasterizeToPng() {
+    if (!state.lastRenderResult) {
+      showToast("No artwork available to export", "error");
+      return;
+    }
+
+    showToast("Rendering High-Res PNG snapshot...");
+    const canvas = dom.exportCanvas;
+    const ctx = canvas.getContext("2d");
+
+    const plain = state.lastRenderResult.plain;
+    const lines = plain.split("\n");
+    const numRows = lines.length;
+    const numCols = Math.max(...lines.map(l => l.length));
+
+    // Typography metrics for high-resolution canvas
+    const charWidth = 9.5;
+    const charHeight = 15;
+    const padding = 36;
+    const titleBarHeight = 40;
+
+    canvas.width = Math.ceil(numCols * charWidth + padding * 2);
+    canvas.height = Math.ceil(numRows * charHeight + padding * 2 + titleBarHeight);
+
+    // 1. Draw sleek terminal window background
+    ctx.fillStyle = "#090a10";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Draw title bar
+    ctx.fillStyle = "#131622";
+    ctx.fillRect(0, 0, canvas.width, titleBarHeight);
+
+    // Window dots
+    const dotColors = ["#ff5f56", "#ffbd2e", "#27c93f"];
+    dotColors.forEach((color, i) => {
+      ctx.beginPath();
+      ctx.arc(padding + i * 18, titleBarHeight / 2, 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    });
+
+    // Title text
+    ctx.font = "bold 12px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#9ba3b8";
+    ctx.fillText("TERMIART // 24-BIT LIVING ARTWORK", padding + 70, titleBarHeight / 2 + 4);
+
+    // Watermark
+    ctx.font = "11px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#4a5568";
+    ctx.fillText("termiart.app", canvas.width - padding - 85, titleBarHeight / 2 + 4);
+
+    // 3. Render character glyphs with HTML spans colors
+    ctx.font = "12px 'JetBrains Mono', monospace";
+    ctx.textBaseline = "top";
+
+    // Parse styled HTML spans into colored character chunks
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = state.lastRenderResult.html;
+
+    let curX = padding;
+    let curY = padding + titleBarHeight;
+
+    function renderNode(node, currentStyle = "#ffffff") {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent;
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i];
+          if (ch === "\n") {
+            curX = padding;
+            curY += charHeight;
+          } else {
+            ctx.fillStyle = currentStyle;
+            ctx.fillText(ch, curX, curY);
+            curX += charWidth;
+          }
+        }
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        let style = currentStyle;
+        if (node.style && node.style.color) {
+          style = node.style.color;
+        }
+        for (const child of node.childNodes) {
+          renderNode(child, style);
+        }
+      }
+    }
+
+    renderNode(tempDiv, "#ffffff");
+
+    // 4. Download generated PNG
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `termiart_${state.style}_${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast("✓ PNG Snapshot saved!");
+      audio.success();
+    }, "image/png");
+  }
+
+  // =========================================================================
+  // 11. LIVE ANIMATION STUDIO
+  // =========================================================================
   function toggleAnimation() {
     if (state.isAnimating) {
       stopAnimation();
@@ -604,186 +696,560 @@
   function startAnimation() {
     state.isAnimating = true;
     state.animFrame = 0;
-    dom.btnToggleAnim.classList.add("playing");
-    dom.playIcon.classList.add("hidden");
-    dom.pauseIcon.classList.remove("hidden");
-    dom.animBtnLabel.textContent = "Pause";
-    dom.animLiveBadge.textContent = "ANIMATING";
-    dom.animLiveBadge.classList.add("playing");
+    dom.animIcon.textContent = "⏸";
+    dom.animBtnLabel.textContent = "PAUSE";
+    dom.animLiveBadge.textContent = "STREAMING";
+    dom.animLiveBadge.style.color = "var(--neon-green)";
+    dom.badgeFps.textContent = `FPS: ${state.animFps}`;
 
-    startAnimationLoop();
+    const intervalMs = Math.round(1000 / state.animFps);
+    state.animIntervalId = setInterval(fetchNextFrame, intervalMs);
     showToast(`Animation started: ${state.animType.toUpperCase()}`);
+    audio.click();
   }
 
   function stopAnimation() {
     state.isAnimating = false;
     clearInterval(state.animIntervalId);
     state.animIntervalId = null;
-
-    dom.btnToggleAnim.classList.remove("playing");
-    dom.playIcon.classList.remove("hidden");
-    dom.pauseIcon.classList.add("hidden");
-    dom.animBtnLabel.textContent = "Play";
+    dom.animIcon.textContent = "▶";
+    dom.animBtnLabel.textContent = "ANIMATE";
     dom.animLiveBadge.textContent = "STANDBY";
-    dom.animLiveBadge.classList.remove("playing");
-
-    // Re-render static crisp frame
-    scheduleRender(0);
+    dom.animLiveBadge.style.color = "var(--color-text-dim)";
+    audio.click();
   }
 
-  function startAnimationLoop() {
-    const intervalMs = Math.round(1000 / state.animFps);
-    let inFlight = false;
+  async function fetchNextFrame() {
+    const formData = new FormData();
+    formData.append("frame", state.animFrame++);
+    formData.append("anim_type", state.animType);
+    formData.append("style", state.style);
+    formData.append("theme", state.theme);
+    formData.append("width", state.width);
+    formData.append("contrast", state.contrast);
+    formData.append("brightness", state.brightness);
+    formData.append("sharpness", state.sharpness);
 
-    state.animIntervalId = setInterval(async () => {
-      if (inFlight) return;
-      inFlight = true;
-
-      const formData = new FormData();
-      formData.append("frame", state.animFrame);
-      formData.append("anim_type", state.animType);
-      formData.append("style", state.style);
-      formData.append("theme", state.theme);
-      formData.append("width", state.width);
-      formData.append("contrast", state.contrast);
-      formData.append("brightness", state.brightness);
-      formData.append("sharpness", state.sharpness);
-      formData.append("edge_enhance", state.edgeEnhance);
-      formData.append("invert", state.invert);
-
-      try {
-        const resp = await fetch("/api/animate-frame", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (resp.ok) {
-          const data = await resp.json();
-          dom.terminalPre.innerHTML = data.html;
-          state.animFrame += 1;
-        }
-      } catch (err) {
-        console.error("Animation frame error:", err);
-      } finally {
-        inFlight = false;
+    try {
+      const resp = await fetch("/api/animate-frame", {
+        method: "POST",
+        body: formData,
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        dom.terminalPre.innerHTML = data.html;
       }
-    }, intervalMs);
+    } catch (e) {
+      stopAnimation();
+    }
   }
 
-  // Procedural Random Style Roller
-  function rollRandomStyle() {
-    const styles = ["halfblock", "dense_ascii", "braille", "matrix", "ascii", "unicode", "cyberpunk"];
-    const themes = ["original", "matrix", "cyberpunk", "rainbow", "fire", "ocean", "purple_neon", "monochrome", "anime"];
+  // =========================================================================
+  // 12. EASTER EGGS (sudo art, Konami Code, Logo Glitch)
+  // =========================================================================
+  // 1. Mini shell command handler
+  function handleShellCommand(cmd) {
+    const cleanCmd = cmd.trim().toLowerCase();
+    dom.shellOutput.classList.remove("hidden");
 
-    state.style = styles[Math.floor(Math.random() * styles.length)];
-    state.theme = themes[Math.floor(Math.random() * themes.length)];
-    state.contrast = +(1.0 + (Math.random() * 0.7 - 0.2)).toFixed(2);
-    state.brightness = +(1.0 + (Math.random() * 0.4 - 0.2)).toFixed(2);
-    state.sharpness = +(1.0 + (Math.random() * 0.6 - 0.1)).toFixed(2);
-    state.edgeEnhance = Math.random() > 0.6;
-    state.preset = "";
-
-    syncControlsToState();
-    scheduleRender(0);
-    showToast(`🎲 Rolled: ${state.style.toUpperCase()} + ${state.theme.toUpperCase()}`);
+    if (cleanCmd === "sudo art") {
+      audio.click();
+      dom.shellOutput.innerHTML = `<strong>"Nice try."</strong> — Terminal root privileges restricted.`;
+    } else if (cleanCmd === "help") {
+      dom.shellOutput.innerHTML = `Commands: <code>sudo art</code>, <code>matrix</code>, <code>cyberpunk</code>, <code>random</code>, <code>clear</code>, <code>god</code>`;
+    } else if (cleanCmd === "matrix") {
+      state.theme = "matrix";
+      syncUIWithState();
+      triggerRender(true);
+      dom.shellOutput.innerHTML = `Active theme: Phosphor Green Matrix.`;
+    } else if (cleanCmd === "cyberpunk") {
+      state.theme = "cyberpunk";
+      syncUIWithState();
+      triggerRender(true);
+      dom.shellOutput.innerHTML = `Active theme: Neon Cyberpunk.`;
+    } else if (cleanCmd === "random" || cleanCmd === "surprise") {
+      triggerSurpriseMe();
+      dom.shellOutput.innerHTML = `Rolling random style...`;
+    } else if (cleanCmd === "clear") {
+      dom.shellOutput.classList.add("hidden");
+    } else if (cleanCmd === "god") {
+      unlockGodMode();
+    } else {
+      dom.shellOutput.innerHTML = `command not found: ${cleanCmd}. Try 'help'.`;
+    }
   }
 
-  // File Download Helper
-  function downloadFile(content, filename, mimeType) {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
+  // 2. Konami Code Listener [↑ ↑ ↓ ↓ ← → ← → B A]
+  const konamiSequence = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+  let konamiIndex = 0;
 
-  // High-Resolution PNG Snapshot Rasterization
-  function exportTerminalAsPng() {
-    const pre = dom.terminalPre;
-    if (!pre || !pre.textContent) return;
+  window.addEventListener("keydown", (e) => {
+    // Check if user is typing in an input
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
 
-    showToast("Generating PNG snapshot...");
-
-    const lines = pre.textContent.split("\n");
-    const numRows = lines.length;
-    const numCols = Math.max(...lines.map(l => l.length));
-
-    const canvas = dom.exportCanvas;
-    const ctx = canvas.getContext("2d");
-
-    const charW = Math.max(7, state.fontSize * 0.6);
-    const charH = Math.max(10, state.fontSize * 1.0);
-
-    const padding = 24;
-    canvas.width = Math.ceil(numCols * charW + padding * 2);
-    canvas.height = Math.ceil(numRows * charH + padding * 2);
-
-    // Dark terminal canvas background
-    ctx.fillStyle = "#080a0f";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.font = `${state.fontSize}px "JetBrains Mono", monospace`;
-    ctx.textBaseline = "top";
-
-    // Walk through child elements to capture color and characters
-    let cursorX = padding;
-    let cursorY = padding;
-
-    function renderNode(node, defaultColor) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const text = node.textContent;
-        for (let i = 0; i < text.length; i++) {
-          const char = text[i];
-          if (char === "\n") {
-            cursorX = padding;
-            cursorY += charH;
-          } else {
-            ctx.fillStyle = defaultColor;
-            ctx.fillText(char, cursorX, cursorY);
-            cursorX += charW;
-          }
-        }
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const color = node.style.color || defaultColor;
-        const bg = node.style.backgroundColor;
-        if (bg) {
-          const textLen = node.textContent.length;
-          ctx.fillStyle = bg;
-          ctx.fillRect(cursorX, cursorY, textLen * charW, charH);
-        }
-        for (const child of node.childNodes) {
-          renderNode(child, color);
-        }
+    if (e.key === konamiSequence[konamiIndex] || e.key.toLowerCase() === konamiSequence[konamiIndex]) {
+      konamiIndex++;
+      if (konamiIndex === konamiSequence.length) {
+        konamiIndex = 0;
+        unlockGodMode();
       }
+    } else {
+      konamiIndex = 0;
     }
 
-    renderNode(pre, "#ffffff");
-
-    // Download PNG
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "termiart_snapshot.png";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast("PNG snapshot downloaded!");
+    // Global Shortcuts
+    if (e.code === "Space") {
+      e.preventDefault();
+      triggerSurpriseMe();
+    } else if (e.key.toLowerCase() === "c") {
+      if (state.lastRenderResult) {
+        copyToClipboard(state.lastRenderResult.plain, "✓ Plain Text Copied!");
       }
-    }, "image/png");
+    } else if (e.key.toLowerCase() === "f") {
+      toggleFullscreen();
+    } else if (e.key.toLowerCase() === "a") {
+      toggleAnimation();
+    } else if (e.key.toLowerCase() === "m") {
+      toggleSound();
+    } else if (e.key.toLowerCase() === "p") {
+      rasterizeToPng();
+    }
+  });
+
+  function unlockGodMode() {
+    audio.easterEgg();
+    dom.modalEasterEgg.classList.remove("hidden");
+    state.style = "braille";
+    state.theme = "rainbow";
+    state.animFps = 30;
+    state.density = 1.4;
+    syncUIWithState();
+    triggerRender(true);
   }
 
-  // Initialization
-  document.addEventListener("DOMContentLoaded", () => {
+  function toggleFullscreen() {
+    dom.terminalWindow.classList.toggle("fullscreen");
+    audio.click();
+  }
+
+  function toggleSound() {
+    state.soundEnabled = !state.soundEnabled;
+    dom.btnSound.classList.toggle("muted", !state.soundEnabled);
+    dom.soundIcon.textContent = state.soundEnabled ? "🔊" : "🔇";
+    dom.btnSound.querySelector(".sound-label").textContent = state.soundEnabled ? "FX ON" : "FX OFF";
+    showToast(state.soundEnabled ? "Sound Effects ON" : "Sound Effects Muted");
+  }
+
+  // =========================================================================
+  // 13. EVENT LISTENERS SETUP
+  // =========================================================================
+  function initEventListeners() {
+    // Sound Toggle
+    dom.btnSound.addEventListener("click", toggleSound);
+
+    // Surprise Me buttons
+    dom.btnNavRandom.addEventListener("click", triggerSurpriseMe);
+    dom.btnHeroRandom.addEventListener("click", triggerSurpriseMe);
+    dom.btnRandomRoll.addEventListener("click", triggerSurpriseMe);
+
+    // Hero Drop CTA
+    dom.btnHeroDrop.addEventListener("click", () => dom.fileInput.click());
+    dom.btnNavUpload.addEventListener("click", () => dom.fileInput.click());
+
+    // Try Demo CTA
+    dom.btnHeroDemo.addEventListener("click", () => {
+      loadSample("portrait");
+      document.getElementById("playground").scrollIntoView({ behavior: "smooth" });
+    });
+
+    // Starter Cards
+    dom.starterCards.forEach(card => {
+      card.addEventListener("click", () => {
+        loadSample(card.dataset.sample);
+        document.getElementById("playground").scrollIntoView({ behavior: "smooth" });
+      });
+    });
+
+    // File input & Dropzone
+    dom.fileInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleFileSelected(e.target.files[0]);
+      }
+    });
+
+    dom.dropzone.addEventListener("click", () => dom.fileInput.click());
+
+    dom.dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dom.dropzone.classList.add("drag-active");
+    });
+
+    dom.dropzone.addEventListener("dragleave", () => {
+      dom.dropzone.classList.remove("drag-active");
+    });
+
+    dom.dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dom.dropzone.classList.remove("drag-active");
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFileSelected(e.dataTransfer.files[0]);
+      }
+    });
+
+    // Paste from clipboard
+    window.addEventListener("paste", (e) => {
+      if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+        handleFileSelected(e.clipboardData.files[0]);
+      }
+    });
+
+    // Clear Thumbnail
+    dom.btnRemoveImage.addEventListener("click", (e) => {
+      e.stopPropagation();
+      state.file = null;
+      state.imageBase64 = null;
+      dom.thumbnailWrapper.classList.add("hidden");
+      dom.dropzonePrompt.classList.remove("hidden");
+      loadSample("portrait");
+    });
+
+    // Presets
+    dom.presetsContainer.querySelectorAll(".preset-card").forEach(btn => {
+      btn.addEventListener("click", () => {
+        dom.presetsContainer.querySelectorAll(".preset-card").forEach(c => c.classList.remove("active"));
+        btn.classList.add("active");
+        state.preset = btn.dataset.preset;
+        if (state.preset) {
+          // If specific preset selected, let server preset define style/theme
+          triggerRender(true);
+        } else {
+          triggerRender(true);
+        }
+        audio.click();
+      });
+    });
+
+    // Renderer Style Radio Tiles
+    dom.stylesContainer.querySelectorAll(".renderer-tile").forEach(tile => {
+      tile.addEventListener("click", () => {
+        dom.stylesContainer.querySelectorAll(".renderer-tile").forEach(t => t.classList.remove("active"));
+        tile.classList.add("active");
+        state.style = tile.dataset.style;
+        state.preset = "";
+        triggerRender(true);
+        audio.click();
+      });
+    });
+
+    // Theme Palette Chips
+    dom.themesContainer.querySelectorAll(".palette-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        dom.themesContainer.querySelectorAll(".palette-chip").forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        state.theme = chip.dataset.theme;
+        state.preset = "";
+        triggerRender(true);
+        audio.click();
+      });
+    });
+
+    // Sliders
+    dom.sliderWidth.addEventListener("input", (e) => {
+      state.width = parseInt(e.target.value, 10);
+      dom.valWidth.textContent = state.width;
+      triggerRender();
+    });
+
+    dom.sliderDensity.addEventListener("input", (e) => {
+      state.density = parseFloat(e.target.value);
+      dom.valDensity.textContent = `${state.density.toFixed(2)}×`;
+      triggerRender();
+    });
+
+    // Animation Controls
+    dom.animTypeSelect.addEventListener("change", (e) => {
+      state.animType = e.target.value;
+      if (state.isAnimating) {
+        stopAnimation();
+        startAnimation();
+      }
+    });
+
+    dom.sliderFps.addEventListener("input", (e) => {
+      state.animFps = parseInt(e.target.value, 10);
+      dom.valFps.textContent = `${state.animFps} FPS`;
+      if (state.isAnimating) {
+        clearInterval(state.animIntervalId);
+        const intervalMs = Math.round(1000 / state.animFps);
+        state.animIntervalId = setInterval(fetchNextFrame, intervalMs);
+      }
+    });
+
+    dom.btnToggleAnim.addEventListener("click", toggleAnimation);
+
+    // Advanced Drawer Toggle
+    dom.btnToggleAdvanced.addEventListener("click", () => {
+      const isExpanded = dom.btnToggleAdvanced.getAttribute("aria-expanded") === "true";
+      dom.btnToggleAdvanced.setAttribute("aria-expanded", !isExpanded);
+      dom.advancedDrawer.classList.toggle("hidden", isExpanded);
+      audio.click();
+    });
+
+    // Advanced Sliders
+    dom.sliderContrast.addEventListener("input", (e) => {
+      state.contrast = parseFloat(e.target.value);
+      dom.valContrast.textContent = `${state.contrast.toFixed(2)}×`;
+      triggerRender();
+    });
+
+    dom.sliderBrightness.addEventListener("input", (e) => {
+      state.brightness = parseFloat(e.target.value);
+      dom.valBrightness.textContent = `${state.brightness.toFixed(2)}×`;
+      triggerRender();
+    });
+
+    dom.sliderSharpness.addEventListener("input", (e) => {
+      state.sharpness = parseFloat(e.target.value);
+      dom.valSharpness.textContent = `${state.sharpness.toFixed(2)}×`;
+      triggerRender();
+    });
+
+    dom.sliderGamma.addEventListener("input", (e) => {
+      state.gamma = parseFloat(e.target.value);
+      dom.valGamma.textContent = state.gamma.toFixed(2);
+      triggerRender();
+    });
+
+    dom.btnResetSliders.addEventListener("click", () => {
+      state.contrast = 1.0;
+      state.brightness = 1.0;
+      state.sharpness = 1.0;
+      state.gamma = 1.0;
+      state.density = 1.0;
+      dom.sliderContrast.value = 1.0;
+      dom.valContrast.textContent = "1.00×";
+      dom.sliderBrightness.value = 1.0;
+      dom.valBrightness.textContent = "1.00×";
+      dom.sliderSharpness.value = 1.0;
+      dom.valSharpness.textContent = "1.00×";
+      dom.sliderGamma.value = 1.0;
+      dom.valGamma.textContent = "1.00";
+      dom.sliderDensity.value = 1.0;
+      dom.valDensity.textContent = "1.00×";
+      triggerRender(true);
+      showToast("Reset sliders to defaults");
+    });
+
+    // Toggles
+    dom.checkEdge.addEventListener("change", (e) => {
+      state.edgeEnhance = e.target.checked;
+      triggerRender(true);
+    });
+
+    dom.checkInvert.addEventListener("change", (e) => {
+      state.invert = e.target.checked;
+      triggerRender(true);
+    });
+
+    dom.checkColor.addEventListener("change", (e) => {
+      state.color = e.target.checked;
+      triggerRender(true);
+    });
+
+    dom.checkCrt.addEventListener("change", (e) => {
+      state.crt = e.target.checked;
+      dom.crtOverlay.classList.toggle("disabled", !state.crt);
+    });
+
+    // Font Zoom
+    dom.btnFontDown.addEventListener("click", () => {
+      state.fontSize = Math.max(6, state.fontSize - 1);
+      dom.terminalPre.style.fontSize = `${state.fontSize}px`;
+      dom.valFontSize.textContent = `${state.fontSize}px`;
+    });
+
+    dom.btnFontUp.addEventListener("click", () => {
+      state.fontSize = Math.min(24, state.fontSize + 1);
+      dom.terminalPre.style.fontSize = `${state.fontSize}px`;
+      dom.valFontSize.textContent = `${state.fontSize}px`;
+    });
+
+    // Fullscreen buttons
+    dom.btnFullscreen.addEventListener("click", toggleFullscreen);
+    dom.btnFullscreenDot.addEventListener("click", toggleFullscreen);
+
+    // Window Close (Clear)
+    dom.dotClose.addEventListener("click", () => {
+      dom.terminalPre.innerHTML = "";
+      showToast("Canvas cleared. Pick a preset or drop an image.");
+    });
+
+    // Window Min (Reset Zoom)
+    dom.dotMin.addEventListener("click", () => {
+      state.fontSize = 11;
+      dom.terminalPre.style.fontSize = "11px";
+      dom.valFontSize.textContent = "11px";
+      showToast("Viewport zoom reset to 11px");
+    });
+
+    // Copy Art Main Button -> Opens Copy Modal
+    dom.btnCopyMain.addEventListener("click", () => {
+      dom.modalCopy.classList.remove("hidden");
+      audio.click();
+    });
+
+    // Share Modal Open
+    dom.btnShareModal.addEventListener("click", () => {
+      dom.modalShare.classList.remove("hidden");
+      audio.click();
+    });
+
+    // Download PNG Action
+    dom.btnDownloadPng.addEventListener("click", rasterizeToPng);
+
+    // Copy Modal Close
+    dom.btnCloseCopy.addEventListener("click", () => dom.modalCopy.classList.add("hidden"));
+    dom.modalCopy.addEventListener("click", (e) => {
+      if (e.target === dom.modalCopy) dom.modalCopy.classList.add("hidden");
+    });
+
+    // Share Modal Close
+    dom.btnCloseShare.addEventListener("click", () => dom.modalShare.classList.add("hidden"));
+    dom.modalShare.addEventListener("click", (e) => {
+      if (e.target === dom.modalShare) dom.modalShare.classList.add("hidden");
+    });
+
+    // Easter Egg Modal Close
+    dom.btnDismissEgg.addEventListener("click", () => dom.modalEasterEgg.classList.add("hidden"));
+
+    // Copy Center Actions
+    dom.btnCopyPlainAction.addEventListener("click", () => {
+      if (!state.lastRenderResult) return;
+      copyToClipboard(state.lastRenderResult.plain, "✓ Plain UTF-8 Text Copied!");
+      dom.modalCopy.classList.add("hidden");
+    });
+
+    dom.btnCopyAnsiAction.addEventListener("click", () => {
+      if (!state.lastRenderResult) return;
+      copyToClipboard(state.lastRenderResult.ansi, "✓ 24-Bit ANSI Codes Copied!");
+      dom.modalCopy.classList.add("hidden");
+    });
+
+    dom.btnCopyMdAction.addEventListener("click", () => {
+      copyToClipboard(getMarkdownOutput(), "✓ Markdown Code Block Copied!");
+      dom.modalCopy.classList.add("hidden");
+    });
+
+    dom.btnCopyHtmlAction.addEventListener("click", () => {
+      copyToClipboard(getHtmlOutput(), "✓ HTML Spans Copied!");
+      dom.modalCopy.classList.add("hidden");
+    });
+
+    // Platform Share Actions
+    dom.btnShareWhatsappImg.addEventListener("click", () => {
+      rasterizeToPng();
+      showToast("Tip: Share the downloaded PNG file directly on WhatsApp!");
+      dom.modalShare.classList.add("hidden");
+    });
+
+    dom.btnShareWhatsappTxt.addEventListener("click", () => {
+      if (!state.lastRenderResult) return;
+      copyToClipboard("```\n" + state.lastRenderResult.plain + "\n```", "✓ Formatted Text Copied for WhatsApp!");
+      dom.modalShare.classList.add("hidden");
+    });
+
+    dom.btnShareDiscordMd.addEventListener("click", () => {
+      copyToClipboard(getMarkdownOutput(), "✓ Discord Markdown Copied!");
+      dom.modalShare.classList.add("hidden");
+    });
+
+    dom.btnShareDiscordPng.addEventListener("click", () => {
+      rasterizeToPng();
+      dom.modalShare.classList.add("hidden");
+    });
+
+    dom.btnShareSlackCode.addEventListener("click", () => {
+      if (!state.lastRenderResult) return;
+      copyToClipboard("```\n" + state.lastRenderResult.plain + "\n```", "✓ Slack Code Block Copied!");
+      dom.modalShare.classList.add("hidden");
+    });
+
+    dom.btnShareSlackPng.addEventListener("click", () => {
+      rasterizeToPng();
+      dom.modalShare.classList.add("hidden");
+    });
+
+    dom.btnShareXCaption.addEventListener("click", () => {
+      const caption = "Turned an image into living terminal art with TermiArt. 🎨✨\nhttps://termiart.app #ASCIIArt #CreativeTech";
+      copyToClipboard(caption, "✓ Caption Copied for X / Twitter!");
+      dom.modalShare.classList.add("hidden");
+    });
+
+    dom.btnShareXIntent.addEventListener("click", () => {
+      const text = encodeURIComponent("Turned an image into living terminal art with TermiArt. 🎨✨");
+      window.open(`https://twitter.com/intent/tweet?text=${text}`, "_blank");
+    });
+
+    // Direct Modal Downloads
+    dom.btnModalDlPng.addEventListener("click", () => {
+      rasterizeToPng();
+      dom.modalShare.classList.add("hidden");
+    });
+
+    dom.btnModalDlTxt.addEventListener("click", () => {
+      if (!state.lastRenderResult) return;
+      downloadBlob(state.lastRenderResult.plain, "termiart.txt", "text/plain");
+      dom.modalShare.classList.add("hidden");
+    });
+
+    dom.btnModalDlAns.addEventListener("click", () => {
+      if (!state.lastRenderResult) return;
+      downloadBlob(state.lastRenderResult.ansi, "termiart.ans", "application/octet-stream");
+      dom.modalShare.classList.add("hidden");
+    });
+
+    dom.btnModalDlHtml.addEventListener("click", () => {
+      downloadBlob(getHtmlOutput(), "termiart.html", "text/html");
+      dom.modalShare.classList.add("hidden");
+    });
+
+    // Copy CLI command
+    dom.btnCopyCli.addEventListener("click", () => {
+      copyToClipboard(dom.cliCommandText.textContent, "✓ Terminal CLI command copied!");
+    });
+
+    // Shell Form Easter Egg
+    dom.shellForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (dom.shellInput.value) {
+        handleShellCommand(dom.shellInput.value);
+        dom.shellInput.value = "";
+      }
+    });
+
+    // Logo Glitch
+    dom.brandLogo.addEventListener("mouseenter", () => {
+      dom.logoGlyph.textContent = "%#";
+      dom.logoText.textContent = "T3RM1ART";
+      setTimeout(() => {
+        dom.logoGlyph.textContent = ">_";
+        dom.logoText.textContent = "TERMIART";
+      }, 350);
+    });
+  }
+
+  // =========================================================================
+  // 14. INITIAL BOOTSTRAP
+  // =========================================================================
+  function bootstrap() {
     initEventListeners();
-    syncControlsToState();
-    // Trigger initial render with sample image
-    triggerRender();
-  });
+    // Default load portrait sample
+    loadSample("portrait");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootstrap);
+  } else {
+    bootstrap();
+  }
 })();
