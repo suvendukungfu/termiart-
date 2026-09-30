@@ -1667,6 +1667,132 @@ input[type="range"]::-webkit-slider-thumb:hover {
   line-height: 1.5;
 }
 
+/* Explore Gallery Grid */
+.explore-section {
+  padding: 80px 24px;
+  border-top: 1px solid var(--border-subtle);
+  background: rgba(13, 15, 23, 0.4);
+}
+
+.explore-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.explore-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-spring);
+  display: flex;
+  flex-direction: column;
+}
+
+.explore-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(0, 240, 255, 0.15);
+}
+
+.explore-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: #05060a;
+  overflow: hidden;
+}
+
+.explore-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.explore-card:hover .explore-img {
+  transform: scale(1.05);
+}
+
+.explore-pill {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(8, 9, 14, 0.85);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  backdrop-filter: blur(6px);
+}
+
+.explore-meta {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.explore-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-cream);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.explore-desc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  margin-bottom: 18px;
+  flex-grow: 1;
+}
+
+.btn-load-specimen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--color-cream);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: all var(--transition-fast);
+}
+
+.btn-load-specimen:hover {
+  background: var(--neon-cyan);
+  color: var(--bg-deep);
+  border-color: var(--neon-cyan);
+}
+
+.btn-arrow {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+/* Chaos Mode Preset Card */
+.preset-card.preset-chaos {
+  border-color: rgba(255, 0, 127, 0.4);
+  background: rgba(255, 0, 127, 0.05);
+}
+
+.preset-card.preset-chaos:hover {
+  border-color: var(--neon-pink);
+  box-shadow: 0 0 16px rgba(255, 0, 127, 0.3);
+}
+
 /* Showcase Cards */
 .showcase-cards {
   display: grid;

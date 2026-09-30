@@ -34,10 +34,10 @@
       </div>
 
       <nav class="nav-links" aria-label="Main Navigation">
-        <a href="#playground" class="nav-link active">Playground</a>
-        <a href="#presets-section" class="nav-link">Presets</a>
+        <a href="/create" class="nav-link" id="nav-create">Create</a>
+        <a href="/explore" class="nav-link" id="nav-explore">Explore</a>
+        <a href="/presets" class="nav-link" id="nav-presets">Presets</a>
         <a href="#how-it-works" class="nav-link">How it works</a>
-        <a href="#showcase" class="nav-link">Gallery</a>
       </nav>
 
       <div class="nav-actions">
@@ -128,13 +128,31 @@
             <span class="card-chip">Sunset</span>
           </button>
 
+          <button type="button" class="starter-card" data-sample="architecture" title="Neo-Tokyo Skyscraper & Highway">
+            <span class="card-icon">🏙️</span>
+            <div class="card-meta">
+              <span class="card-title">ARCHITECTURE</span>
+              <span class="card-sub">Neo-Tokyo Skyline</span>
+            </div>
+            <span class="card-chip">Blocks</span>
+          </button>
+
+          <button type="button" class="starter-card" data-sample="animals" title="Geometric Cyber Panther / Wolf">
+            <span class="card-icon">🐺</span>
+            <div class="card-meta">
+              <span class="card-title">ANIMALS</span>
+              <span class="card-sub">Cyber Panther</span>
+            </div>
+            <span class="card-chip">Braille</span>
+          </button>
+
           <button type="button" class="starter-card" data-sample="logo" title="Arcade Terminal Pixel Skull">
             <span class="card-icon">👾</span>
             <div class="card-meta">
               <span class="card-title">LOGO</span>
               <span class="card-sub">Matrix Dot Matrix</span>
             </div>
-            <span class="card-chip">Braille</span>
+            <span class="card-chip">Glyphs</span>
           </button>
         </div>
       </div>
@@ -225,10 +243,20 @@
               <span class="preset-name">Synthwave</span>
               <span class="preset-tag">Electric Violet</span>
             </button>
+            <button type="button" class="preset-card" data-preset="rainbow">
+              <div class="preset-glow glow-synth"></div>
+              <span class="preset-name">Rainbow</span>
+              <span class="preset-tag">Full Spectrum</span>
+            </button>
             <button type="button" class="preset-card" data-preset="monochrome">
               <div class="preset-glow glow-mono"></div>
               <span class="preset-name">Monochrome</span>
               <span class="preset-tag">High-Contrast B&amp;W</span>
+            </button>
+            <button type="button" class="preset-card preset-chaos" id="btn-preset-chaos" title="Activate Chaos Mode!">
+              <div class="preset-glow glow-fire"></div>
+              <span class="preset-name">MAKE IT CHAOS</span>
+              <span class="preset-tag">Glitch · Matrix · Scramble</span>
             </button>
           </div>
         </div>
@@ -733,6 +761,113 @@
           <div class="pipeline-badge">04 // SHARE</div>
           <h3 class="pipeline-title">Universal Format Export</h3>
           <p class="pipeline-desc">Instant clipboard export for Discord code blocks, high-resolution PNG terminal snapshots for WhatsApp and X, and raw ANSI files for hackers.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Explore Terminal-Art Gallery Section -->
+  <section class="explore-section" id="explore">
+    <div class="story-container">
+      <div class="section-tag">CURATED EXHIBIT // 6 SPECIMENS</div>
+      <h2 class="section-heading">EXPLORE WHAT TERMIART CAN DO</h2>
+      <p class="section-subtext">Click any specimen to load it directly into the living playground and transform its mood.</p>
+
+      <div class="explore-gallery-grid">
+        <!-- Specimen 1: Portrait -->
+        <div class="explore-card" data-sample="portrait">
+          <div class="explore-img-wrap">
+            <img src="/api/sample/portrait" alt="Portrait Specimen" class="explore-img">
+            <span class="explore-pill">CYBERPUNK</span>
+          </div>
+          <div class="explore-meta">
+            <h3 class="explore-title">PORTRAIT</h3>
+            <p class="explore-desc">High-contrast neon rim light, cyber visor &amp; dark silhouette.</p>
+            <button type="button" class="btn-load-specimen" data-sample="portrait">
+              <span>LOAD SPECIMEN</span>
+              <span class="btn-arrow">❯</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Specimen 2: Anime -->
+        <div class="explore-card" data-sample="anime">
+          <div class="explore-img-wrap">
+            <img src="/api/sample/anime" alt="Anime Specimen" class="explore-img">
+            <span class="explore-pill">ANIME CRISP</span>
+          </div>
+          <div class="explore-meta">
+            <h3 class="explore-title">ANIME</h3>
+            <p class="explore-desc">Big expressive eyes, vibrant saturated hair &amp; sharp contours.</p>
+            <button type="button" class="btn-load-specimen" data-sample="anime">
+              <span>LOAD SPECIMEN</span>
+              <span class="btn-arrow">❯</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Specimen 3: Landscape -->
+        <div class="explore-card" data-sample="landscape">
+          <div class="explore-img-wrap">
+            <img src="/api/sample/landscape" alt="Landscape Specimen" class="explore-img">
+            <span class="explore-pill">SYNTHWAVE</span>
+          </div>
+          <div class="explore-meta">
+            <h3 class="explore-title">LANDSCAPE</h3>
+            <p class="explore-desc">Sunset gradient, mountain silhouettes &amp; perspective grid.</p>
+            <button type="button" class="btn-load-specimen" data-sample="landscape">
+              <span>LOAD SPECIMEN</span>
+              <span class="btn-arrow">❯</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Specimen 4: Architecture -->
+        <div class="explore-card" data-sample="architecture">
+          <div class="explore-img-wrap">
+            <img src="/api/sample/architecture" alt="Architecture Specimen" class="explore-img">
+            <span class="explore-pill">NEO-TOKYO</span>
+          </div>
+          <div class="explore-meta">
+            <h3 class="explore-title">ARCHITECTURE</h3>
+            <p class="explore-desc">Cyberpunk skyscraper tower, highway overpass &amp; neon skyline.</p>
+            <button type="button" class="btn-load-specimen" data-sample="architecture">
+              <span>LOAD SPECIMEN</span>
+              <span class="btn-arrow">❯</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Specimen 5: Animals -->
+        <div class="explore-card" data-sample="animals">
+          <div class="explore-img-wrap">
+            <img src="/api/sample/animals" alt="Animals Specimen" class="explore-img">
+            <span class="explore-pill">CYBER PANTHER</span>
+          </div>
+          <div class="explore-meta">
+            <h3 class="explore-title">ANIMALS</h3>
+            <p class="explore-desc">Geometric cybernetic wolf with glowing eyes &amp; whisker circuits.</p>
+            <button type="button" class="btn-load-specimen" data-sample="animals">
+              <span>LOAD SPECIMEN</span>
+              <span class="btn-arrow">❯</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Specimen 6: Logo -->
+        <div class="explore-card" data-sample="logo">
+          <div class="explore-img-wrap">
+            <img src="/api/sample/logo" alt="Logo Specimen" class="explore-img">
+            <span class="explore-pill">ARCADE MATRIX</span>
+          </div>
+          <div class="explore-meta">
+            <h3 class="explore-title">LOGOS &amp; GLYPHS</h3>
+            <p class="explore-desc">Pixel skull, terminal prompt glyph &amp; cyber neon framing.</p>
+            <button type="button" class="btn-load-specimen" data-sample="logo">
+              <span>LOAD SPECIMEN</span>
+              <span class="btn-arrow">❯</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
