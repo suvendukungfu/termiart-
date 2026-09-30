@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "termiart"
+version = "2.0.0"
+description = "Turn any image into living terminal character art"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "Pillow>=9.0.0",
+]
+
+[project.scripts]
+termiart = "termiart:main"

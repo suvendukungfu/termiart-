@@ -9,6 +9,9 @@ venv/
 *.egg-info/
 dist/
 build/
+node_modules/
+preview_*.png
+.vite/
 .DS_Store
 *.ans
 art.txt
