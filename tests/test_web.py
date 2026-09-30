@@ -71,7 +71,27 @@ class TestWebStudio(unittest.TestCase):
         self.assertIn("portrait", sample_ids)
         self.assertIn("anime", sample_ids)
         self.assertIn("landscape", sample_ids)
+        self.assertIn("architecture", sample_ids)
+        self.assertIn("animals", sample_ids)
         self.assertIn("logo", sample_ids)
+
+    def test_routes_navigation(self):
+        """Verify /create, /explore, and /presets serve 200 OK."""
+        for path in ("/create", "/explore", "/presets"):
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("TERMIART", response.text)
+
+    def test_cinematic_404_page(self):
+        """Verify 404 page returns 404 status and contains the cinematic message."""
+        response = self.client.get("/404")
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("The path may be broken", response.text)
+
+        # Test non-existent route triggers custom 404 handler
+        response_fake = self.client.get("/somewhere_undefined")
+        self.assertEqual(response_fake.status_code, 404)
+        self.assertIn("The path may be broken", response_fake.text)
 
     def test_render_curated_specimen_portrait(self):
         """Verify rendering a curated specimen by ID."""
