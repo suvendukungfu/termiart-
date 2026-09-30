@@ -310,6 +310,50 @@ export class MatrixRenderer implements RendererInterface {
 }
 
 /**
+ * RGB ANSI Character Renderer
+ * TrueColor alphanumeric character matrix preserving full 24-bit RGB per cell
+ */
+export class RgbRenderer implements RendererInterface {
+  public name = 'RGB ANSI';
+  private static readonly RAMP = '@%#*+=-:. ';
+
+  public render(
+    pixelData: Uint8ClampedArray,
+    cols: number,
+    rows: number,
+    options: RenderOptions
+  ): TerminalCell[][] {
+    const ramp = RgbRenderer.RAMP;
+    const rampLen = ramp.length;
+    const cells: TerminalCell[][] = [];
+
+    for (let y = 0; y < rows; y++) {
+      const row: TerminalCell[] = [];
+      const yRatio = y / (rows || 1);
+
+      for (let x = 0; x < cols; x++) {
+        const xRatio = x / (cols || 1);
+        const idx = (y * cols + x) * 4;
+        const r = pixelData[idx];
+        const g = pixelData[idx + 1];
+        const b = pixelData[idx + 2];
+
+        const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        // Invert index so brighter = lighter characters or vice versa
+        const charIdx = Math.min(rampLen - 1, Math.floor((1 - lum) * rampLen));
+        const char = ramp[charIdx];
+
+        const fg = ColorEngine.apply([r, g, b], options.theme, lum, xRatio, yRatio);
+        row.push({ char, fg });
+      }
+      cells.push(row);
+    }
+
+    return cells;
+  }
+}
+
+/**
  * Renderer Registry
  */
 export const RENDERERS: Record<string, RendererInterface> = {
@@ -319,4 +363,5 @@ export const RENDERERS: Record<string, RendererInterface> = {
   halfblock: new HalfblockRenderer(),
   braille: new BrailleRenderer(),
   matrix: new MatrixRenderer(),
+  rgb: new RgbRenderer(),
 };

@@ -1,10 +1,11 @@
 export type RendererType =
+  | 'halfblock'
   | 'ascii'
   | 'dense_ascii'
   | 'unicode'
-  | 'halfblock'
   | 'braille'
-  | 'matrix';
+  | 'matrix'
+  | 'rgb';
 
 export type ThemeType =
   | 'original'
@@ -17,6 +18,14 @@ export type ThemeType =
   | 'rainbow'
   | 'anime'
   | 'random';
+
+export type AnimationType =
+  | 'none'
+  | 'matrix'
+  | 'cycle'
+  | 'scanline'
+  | 'glitch'
+  | 'flicker';
 
 export type ColorRGB = [number, number, number];
 
@@ -56,6 +65,8 @@ export interface RenderOptions {
   invert?: boolean;
   density?: number;
   dither?: boolean;
+  animation?: AnimationType;
+  animFrame?: number;
 }
 
 export interface ImageAnalysis {

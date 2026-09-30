@@ -7,50 +7,51 @@ interface Cinematic404Props {
 
 export const Cinematic404: React.FC<Cinematic404Props> = ({ onBackToHome }) => {
   return (
-    <div className="fixed inset-0 z-50 bg-[#08080a] text-white flex flex-col justify-between p-8 sm:p-12 md:p-16 select-none overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-[#050507] text-white flex flex-col justify-between p-8 sm:p-12 md:p-16 select-none overflow-hidden">
       {/* Top Header */}
       <div className="w-full flex items-center justify-between">
         {/* Original TermiArt Mark */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#0e1017] border border-[#232735] flex items-center justify-center">
-            <span className="text-[#00ff88] font-mono text-sm font-bold">&gt;_</span>
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded bg-[#0b0c10] border border-[#1f232e] flex items-center justify-center">
+            <span className="text-[#00ff88] font-mono text-xs font-bold">&gt;_</span>
           </div>
-          <span className="font-display font-bold text-sm tracking-wider text-white">
+          <span className="font-display font-bold text-sm tracking-widest text-white">
             TERMIART
           </span>
         </div>
 
-        <div className="text-[11px] font-mono text-zinc-500 tracking-widest uppercase">
-          ERR_404_PAGE_NOT_FOUND
+        <div className="text-[10px] font-mono text-zinc-500 tracking-widest uppercase">
+          ERR_404_SIGNAL_LOST
         </div>
       </div>
 
       {/* Center Cinematic 404 Composition */}
       <div className="flex flex-col items-center justify-center text-center my-auto">
-        <div className="font-mono-term text-[90px] sm:text-[140px] md:text-[200px] lg:text-[260px] font-semibold leading-none tracking-tighter text-white drop-shadow-[0_0_80px_rgba(255,255,255,0.08)] select-none">
+        <div className="font-mono-term text-[110px] sm:text-[160px] md:text-[220px] lg:text-[280px] font-semibold leading-none tracking-tighter text-white drop-shadow-[0_0_90px_rgba(255,255,255,0.06)] select-none">
           404
         </div>
 
-        <div className="w-12 h-px bg-zinc-700 my-6 sm:my-8" />
+        <div className="w-12 h-px bg-zinc-800 my-6 sm:my-8" />
 
-        <p className="font-sans text-xs sm:text-sm md:text-base text-zinc-400 max-w-md font-normal leading-relaxed">
-          The path may be broken, but the journey isn't. Let's get you back.
-        </p>
+        <div className="font-mono font-bold text-xs sm:text-sm md:text-base text-zinc-300 tracking-widest uppercase leading-relaxed max-w-md">
+          THE SIGNAL GOT LOST. <br />
+          <span className="text-[#00ff88]">THE ART DIDN'T.</span>
+        </div>
 
         <button
           onClick={() => {
             sound.playClick();
             onBackToHome();
           }}
-          className="mt-8 px-6 py-2.5 rounded-lg bg-[#141620] hover:bg-[#1e2230] border border-[#272b3c] hover:border-[#00ff88]/50 text-white font-mono text-xs font-semibold tracking-wider transition-all active:scale-95 shadow-lg"
+          className="mt-8 px-6 py-2.5 rounded-lg bg-[#0e1017] hover:bg-[#161824] border border-[#232735] hover:border-[#00ff88]/60 text-white font-mono text-xs font-semibold tracking-widest uppercase transition-all active:scale-95 shadow-lg"
         >
-          RETURN TO HOME
+          RETURN TO TERMINAL
         </button>
       </div>
 
       {/* Bottom Minimal Technical Status */}
       <div className="w-full flex items-center justify-between text-[10px] font-mono text-zinc-600">
-        <div>SYS_STATUS: READY</div>
+        <div>SYS_RECOVERY: READY</div>
         <div>TERMINAL ART INSTRUMENT</div>
       </div>
     </div>

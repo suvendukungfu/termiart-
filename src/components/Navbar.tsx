@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { Volume2, VolumeX, Sparkles, Terminal, Compass, Palette, Upload } from 'lucide-react';
+import { Volume2, VolumeX, Dices } from 'lucide-react';
 import { sound } from '../utils/audio';
 
 interface NavbarProps {
   currentTab: 'home' | 'create' | 'explore' | 'presets' | '404';
   setCurrentTab: (tab: 'home' | 'create' | 'explore' | 'presets' | '404') => void;
-  onOpenUpload?: () => void;
+  onRandomize?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpenUpload }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  currentTab,
+  setCurrentTab,
+  onRandomize,
+}) => {
   const [muted, setMuted] = useState(sound.isMuted());
 
   const handleToggleSound = () => {
@@ -16,58 +20,42 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
     setMuted(!isNowEnabled);
   };
 
-  const navItemClass = (tab: typeof currentTab) =>
-    `px-3 py-1.5 rounded-lg text-xs font-mono tracking-wide transition-all flex items-center gap-1.5 ${
+  const navLinkClass = (tab: typeof currentTab) =>
+    `px-3 py-1.5 text-xs font-mono tracking-widest uppercase transition-all ${
       currentTab === tab
-        ? 'bg-[#181a24] text-[#00ff88] border border-[#272a38] shadow-[0_0_15px_rgba(0,255,136,0.15)]'
-        : 'text-zinc-400 hover:text-zinc-100 hover:bg-[#12141c]'
+        ? 'text-[#00ff88] font-bold border-b border-[#00ff88]'
+        : 'text-zinc-400 hover:text-white'
     }`;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#08080a]/85 backdrop-blur-md border-b border-[#181b24]">
+    <header className="sticky top-0 z-50 w-full bg-[#050507]/90 backdrop-blur-md border-b border-[#14161f]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        {/* Brand */}
+        {/* Left: Brand */}
         <button
           onClick={() => {
             sound.playClick();
             setCurrentTab('home');
           }}
-          className="flex items-center gap-2 group text-left"
+          className="flex items-center gap-2.5 group text-left"
         >
-          <div className="w-8 h-8 rounded-lg bg-[#0e1017] border border-[#232735] flex items-center justify-center group-hover:border-[#00ff88]/50 transition-colors shadow-inner">
-            <span className="text-[#00ff88] font-mono text-sm font-bold">&gt;_</span>
+          <div className="w-7 h-7 rounded bg-[#0b0c10] border border-[#1f232e] flex items-center justify-center group-hover:border-[#00ff88]/60 transition-colors">
+            <span className="text-[#00ff88] font-mono text-xs font-bold">&gt;_</span>
           </div>
-          <div className="flex flex-col">
-            <span className="font-display font-bold text-sm tracking-wider text-white group-hover:text-[#00ff88] transition-colors">
-              TERMIART
-            </span>
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest leading-none">
-              ENGINE v2.0
-            </span>
-          </div>
+          <span className="font-display font-bold text-sm tracking-widest text-white group-hover:text-[#00ff88] transition-colors">
+            TERMIART
+          </span>
         </button>
 
-        {/* Navigation Tabs */}
-        <nav className="flex items-center gap-1 sm:gap-2">
-          <button
-            onClick={() => {
-              sound.playClick();
-              setCurrentTab('home');
-            }}
-            className={navItemClass('home')}
-          >
-            <span className="hidden sm:inline">Home</span>
-          </button>
-
+        {/* Center: Minimal Navigation */}
+        <nav className="flex items-center gap-4 sm:gap-8">
           <button
             onClick={() => {
               sound.playClick();
               setCurrentTab('create');
             }}
-            className={navItemClass('create')}
+            className={navLinkClass('create')}
           >
-            <Terminal className="w-3.5 h-3.5" />
-            <span>Studio</span>
+            CREATE
           </button>
 
           <button
@@ -75,10 +63,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
               sound.playClick();
               setCurrentTab('explore');
             }}
-            className={navItemClass('explore')}
+            className={navLinkClass('explore')}
           >
-            <Compass className="w-3.5 h-3.5" />
-            <span>Explore</span>
+            EXPLORE
           </button>
 
           <button
@@ -86,15 +73,28 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
               sound.playClick();
               setCurrentTab('presets');
             }}
-            className={navItemClass('presets')}
+            className={navLinkClass('presets')}
           >
-            <Palette className="w-3.5 h-3.5" />
-            <span>Presets</span>
+            PRESETS
           </button>
         </nav>
 
-        {/* Actions & Sound Toggle */}
-        <div className="flex items-center gap-2">
+        {/* Right: RANDOMIZE & Sound Toggle */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {onRandomize && (
+            <button
+              onClick={() => {
+                sound.playShift();
+                onRandomize();
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0e1017] hover:bg-[#161824] border border-[#232735] hover:border-amber-400/60 text-zinc-300 hover:text-amber-300 font-mono text-xs font-semibold tracking-wider transition-all active:scale-95 shadow-sm"
+              title="Surprise me with randomized creative parameters"
+            >
+              <Dices className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">RANDOMIZE</span>
+            </button>
+          )}
+
           <button
             onClick={handleToggleSound}
             title={muted ? 'Unmute tactical audio' : 'Mute tactical audio'}
@@ -103,19 +103,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
           >
             {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-[#00ff88]" />}
           </button>
-
-          {onOpenUpload && (
-            <button
-              onClick={() => {
-                sound.playClick();
-                onOpenUpload();
-              }}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#00ff88] text-black font-mono text-xs font-bold rounded-lg hover:bg-[#33ff9f] transition-all shadow-[0_0_15px_rgba(0,255,136,0.25)] active:scale-95"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              <span>DROP IMAGE</span>
-            </button>
-          )}
         </div>
       </div>
     </header>
