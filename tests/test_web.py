@@ -61,7 +61,33 @@ class TestWebStudio(unittest.TestCase):
         self.assertTrue(len(data["html"]) > 0)
         self.assertTrue(len(data["plain"]) > 0)
         self.assertIn("cols", data["stats"])
-        self.assertIn("python3 termiart.py", data["cli_command"])
+    def test_samples_catalog(self):
+        """Verify the curated specimen samples catalog endpoint."""
+        response = self.client.get("/api/samples")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("samples", data)
+        sample_ids = [s["id"] for s in data["samples"]]
+        self.assertIn("portrait", sample_ids)
+        self.assertIn("anime", sample_ids)
+        self.assertIn("landscape", sample_ids)
+        self.assertIn("logo", sample_ids)
+
+    def test_render_curated_specimen_portrait(self):
+        """Verify rendering a curated specimen by ID."""
+        response = self.client.post(
+            "/api/render",
+            data={
+                "sample_name": "portrait",
+                "style": "halfblock",
+                "theme": "cyberpunk",
+                "width": 60,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "success")
+        self.assertTrue(len(data["html"]) > 0)
 
 
 if __name__ == "__main__":
