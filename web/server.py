@@ -215,12 +215,64 @@ async def get_presets():
     }
 
 
+@app.get("/api/samples")
+async def list_samples():
+    """List curated demo samples available for instant loading."""
+    return {
+        "samples": [
+            {
+                "id": "portrait",
+                "name": "Portrait",
+                "tag": "Cyberpunk",
+                "description": "Neon rim light & cyber visor silhouette",
+                "style": "halfblock",
+                "theme": "cyberpunk",
+                "image_url": "/api/sample/portrait"
+            },
+            {
+                "id": "anime",
+                "name": "Anime",
+                "tag": "Vivid Character",
+                "description": "Expressive eyes, sharp lines & colorful hair",
+                "style": "dense_ascii",
+                "theme": "anime",
+                "image_url": "/api/sample/anime"
+            },
+            {
+                "id": "landscape",
+                "name": "Landscape",
+                "tag": "Synthwave",
+                "description": "Glowing sun, mountain ridges & perspective grid",
+                "style": "halfblock",
+                "theme": "fire",
+                "image_url": "/api/sample/landscape"
+            },
+            {
+                "id": "logo",
+                "name": "Logo",
+                "tag": "Arcade Terminal",
+                "description": "Pixel skull, prompt glyph & cyber frame",
+                "style": "braille",
+                "theme": "matrix",
+                "image_url": "/api/sample/logo"
+            }
+        ]
+    }
+
+
 @app.get("/api/sample/{name}")
 async def get_sample_image(name: str):
     """Retrieve built-in sample test images."""
-    sample_path = SAMPLES_DIR / "sample_test.png"
-    if sample_path.exists():
-        return FileResponse(sample_path, media_type="image/png")
+    clean_name = Path(name).stem.lower()
+    candidates = [
+        STATIC_DIR / "samples" / f"{clean_name}.png",
+        STATIC_DIR / "samples" / f"{clean_name}.jpg",
+        SAMPLES_DIR / f"{clean_name}.png",
+        SAMPLES_DIR / "sample_test.png",
+    ]
+    for c in candidates:
+        if c.exists():
+            return FileResponse(c, media_type="image/png")
     raise HTTPException(status_code=404, detail="Sample image not found")
 
 
@@ -251,33 +303,58 @@ async def render_art(
     pil_img: Optional[Image.Image] = None
     source_filename = "image.png"
 
-    # 1. Resolve image source
-    if file and file.filename:
-        content = await file.read()
-        pil_img = Image.open(io.BytesIO(content))
-        source_filename = file.filename
-    elif image_base64:
-        # Data URL or pure base64
-        if "base64," in image_base64:
-            image_base64 = image_base64.split("base64,")[1]
-        raw_bytes = base64.b64decode(image_base64)
-        pil_img = Image.open(io.BytesIO(raw_bytes))
-    elif sample_name or not CURRENT_SESSION["image"]:
-        # Fallback to default sample
-        sample_path = SAMPLES_DIR / "sample_test.png"
-        if sample_path.exists():
-            pil_img = Image.open(sample_path)
-            source_filename = "sample_test.png"
+    # 1. Resolve image source with human-friendly error catching
+    try:
+        if file and file.filename:
+            content = await file.read()
+            pil_img = Image.open(io.BytesIO(content))
+            source_filename = file.filename
+        elif image_base64:
+            if "base64," in image_base64:
+                image_base64 = image_base64.split("base64,")[1]
+            raw_bytes = base64.b64decode(image_base64)
+            pil_img = Image.open(io.BytesIO(raw_bytes))
+        elif sample_name:
+            clean_sname = Path(sample_name).stem.lower()
+            candidates = [
+                STATIC_DIR / "samples" / f"{clean_sname}.png",
+                SAMPLES_DIR / f"{clean_sname}.png",
+                SAMPLES_DIR / "sample_test.png",
+            ]
+            for c in candidates:
+                if c.exists():
+                    pil_img = Image.open(c)
+                    source_filename = f"{clean_sname}.png"
+                    break
+        elif CURRENT_SESSION["image"] is not None:
+            pil_img = CURRENT_SESSION["image"]
         else:
-            raise HTTPException(status_code=400, detail="No image provided and sample image is unavailable.")
-    else:
-        # Use cached session image
-        pil_img = CURRENT_SESSION["image"]
+            # Fallback to default portrait or sample
+            default_path = STATIC_DIR / "samples" / "portrait.png"
+            if not default_path.exists():
+                default_path = SAMPLES_DIR / "sample_test.png"
+            if default_path.exists():
+                pil_img = Image.open(default_path)
+                source_filename = default_path.name
+    except Image.DecompressionBombError:
+        raise HTTPException(
+            status_code=400,
+            detail="This image is too large to process safely. Try a smaller image or resize it first."
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not open this image format: {str(e)}. Try a standard PNG, JPG, or WebP image."
+        )
 
     if pil_img is None:
-        raise HTTPException(status_code=400, detail="Invalid image input")
+        raise HTTPException(status_code=400, detail="No valid image found to render.")
 
-    pil_img.load()
+    try:
+        pil_img.load()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Image decoding failed: {str(e)}")
+
     CURRENT_SESSION["image"] = pil_img.copy()
 
     # 2. Build RenderConfig
