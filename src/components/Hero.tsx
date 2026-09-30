@@ -26,7 +26,7 @@ export const Hero: React.FC<HeroProps> = ({
   return (
     <section className="relative w-full pt-8 pb-16 flex flex-col items-center justify-center overflow-hidden">
       {/* Subtle ambient background glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-[#00ff88]/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-87.5 bg-[#00ff88]/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full flex flex-col items-center">
         {/* Technical Badge */}
@@ -40,7 +40,7 @@ export const Hero: React.FC<HeroProps> = ({
         {/* Main Hero Typography */}
         <h1 className="font-display font-black text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-center text-white leading-[1.05] max-w-4xl">
           TURN ANY IMAGE <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ff88] via-cyan-400 to-[#bf5af2]">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-[#00ff88] via-cyan-400 to-[#bf5af2]">
             INTO TERMINAL ART.
           </span>
         </h1>

@@ -93,7 +93,7 @@ export const ImageSourcePanel: React.FC<ImageSourcePanelProps> = ({
 
       {/* Dropzone / Preview */}
       {imagePreviewUrl ? (
-        <div className="relative group rounded-xl overflow-hidden border border-[#232735] bg-[#08080a] flex flex-col items-center justify-center min-h-[180px]">
+        <div className="relative group rounded-xl overflow-hidden border border-[#232735] bg-[#08080a] flex flex-col items-center justify-center min-h-45">
           <img
             src={imagePreviewUrl}
             alt="Source uploaded"
@@ -115,7 +115,7 @@ export const ImageSourcePanel: React.FC<ImageSourcePanelProps> = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 min-h-[160px] ${
+          className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 min-h-40 ${
             isDragging
               ? 'border-[#00ff88] bg-[#00ff88]/5 scale-[0.99]'
               : 'border-[#262b3a] hover:border-[#383f54] bg-[#0e1017]'

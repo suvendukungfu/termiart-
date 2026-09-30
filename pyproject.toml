@@ -14,3 +14,14 @@ dependencies = [
 
 [project.scripts]
 termiart = "termiart:main"
+
+[tool.setuptools]
+py-modules = ["termiart", "run_web"]
+packages = ["core", "cli", "renderers", "colors", "effects", "web"]
+
+[tool.pyright]
+include = ["core", "cli", "renderers", "colors", "effects", "web", "tests", "termiart.py", "run_web.py"]
+extraPaths = ["."]
+executionEnvironments = [
+  { root = "." }
+]

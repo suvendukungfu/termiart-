@@ -31,7 +31,7 @@ export const Cinematic404: React.FC<Cinematic404Props> = ({ onBackToHome }) => {
           404
         </div>
 
-        <div className="w-12 h-[1px] bg-zinc-700 my-6 sm:my-8" />
+        <div className="w-12 h-px bg-zinc-700 my-6 sm:my-8" />
 
         <p className="font-sans text-xs sm:text-sm md:text-base text-zinc-400 max-w-md font-normal leading-relaxed">
           The path may be broken, but the journey isn't. Let's get you back.

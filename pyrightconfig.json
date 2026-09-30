@@ -1,0 +1,26 @@
+{
+  "include": [
+    "core",
+    "cli",
+    "renderers",
+    "colors",
+    "effects",
+    "web",
+    "tests",
+    "termiart.py",
+    "run_web.py"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src"
+  ],
+  "extraPaths": [
+    "."
+  ],
+  "executionEnvironments": [
+    {
+      "root": "."
+    }
+  ]
+}

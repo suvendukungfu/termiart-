@@ -162,7 +162,7 @@ export const TerminalDisplay: React.FC<TerminalDisplayProps> = ({
       </div>
 
       {/* Main Terminal Viewport */}
-      <div className="relative flex-1 bg-[#08080a] overflow-auto p-4 sm:p-6 flex items-center justify-center min-h-[340px] max-h-[75vh]">
+      <div className="relative flex-1 bg-[#08080a] overflow-auto p-4 sm:p-6 flex items-center justify-center min-h-85 max-h-[75vh]">
         {/* Loading overlay */}
         {isLoading && (
           <div className="absolute inset-0 bg-[#08080a]/90 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-3">
