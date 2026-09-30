@@ -460,6 +460,8 @@
     portrait: { style: "halfblock", theme: "cyberpunk", name: "portrait.png" },
     anime: { style: "dense_ascii", theme: "anime", name: "anime.png" },
     landscape: { style: "halfblock", theme: "fire", name: "landscape.png" },
+    architecture: { style: "unicode", theme: "cyberpunk", name: "architecture.png" },
+    animals: { style: "braille", theme: "rainbow", name: "animals.png" },
     logo: { style: "braille", theme: "matrix", name: "logo.png" },
   };
 
@@ -489,9 +491,9 @@
   }
 
   // =========================================================================
-  // 8. IMAGE UPLOAD & DRAG/DROP
+  // 8. IMAGE UPLOAD & DRAG/DROP WITH PROGRESSIVE TERMINAL STATUS
   // =========================================================================
-  function handleFileSelected(file) {
+  async function handleFileSelected(file) {
     if (!file || !file.type.startsWith("image/")) {
       showToast("Please provide a valid image file (PNG, JPG, WebP)", "error");
       return;
@@ -501,6 +503,23 @@
     state.sampleName = null;
     state.imageBase64 = null;
 
+    // Progressive Terminal Upload Sequence
+    dom.terminalLoader.classList.remove("hidden");
+    dom.telStatusLabel.textContent = "INSPECTING";
+    const uploadSequence = [
+      "IMAGE RECEIVED",
+      "ANALYZING IMAGE...",
+      "MAPPING PIXELS...",
+      "CHOOSING CHARACTERS...",
+      "BUILDING TERMINAL...",
+      "ARTIFACT READY."
+    ];
+
+    for (let step of uploadSequence) {
+      dom.loaderTicker.textContent = step;
+      await new Promise(r => setTimeout(r, 90));
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       dom.imageThumbnail.src = e.target.result;
@@ -509,10 +528,10 @@
       dom.dropzonePrompt.classList.add("hidden");
       state.imageBase64 = e.target.result;
 
-      // Scroll smoothly to playground if on hero
-      document.getElementById("playground").scrollIntoView({ behavior: "smooth" });
+      handleRouteNavigation("/create");
       triggerRender(true);
-      showToast(`Loaded ${file.name}`);
+      showToast(`Artifact generated from ${file.name}`);
+      audio.success();
     };
     reader.readAsDataURL(file);
   }
@@ -756,7 +775,10 @@
       audio.click();
       dom.shellOutput.innerHTML = `<strong>"Nice try."</strong> — Terminal root privileges restricted.`;
     } else if (cleanCmd === "help") {
-      dom.shellOutput.innerHTML = `Commands: <code>sudo art</code>, <code>matrix</code>, <code>cyberpunk</code>, <code>random</code>, <code>clear</code>, <code>god</code>`;
+      dom.shellOutput.innerHTML = `Commands: <code>sudo art</code>, <code>chaos</code>, <code>matrix</code>, <code>cyberpunk</code>, <code>random</code>, <code>clear</code>, <code>god</code>`;
+    } else if (cleanCmd === "chaos" || cleanCmd === "make it chaos") {
+      triggerChaosMode();
+      dom.shellOutput.innerHTML = `CHAOS PROTOCOL ACTIVATED.`;
     } else if (cleanCmd === "matrix") {
       state.theme = "matrix";
       syncUIWithState();
@@ -1227,6 +1249,37 @@
       }
     });
 
+    // Chaos Mode Preset
+    const btnChaos = document.getElementById("btn-preset-chaos");
+    if (btnChaos) {
+      btnChaos.addEventListener("click", triggerChaosMode);
+    }
+
+    // Explore Specimen Load Buttons
+    document.querySelectorAll(".btn-load-specimen").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const sample = btn.dataset.sample;
+        loadSample(sample);
+        handleRouteNavigation("/create");
+        showToast(`Loaded ${sample.toUpperCase()} specimen`);
+      });
+    });
+
+    // Client-side Navigation Routing
+    document.querySelectorAll(".nav-link").forEach(link => {
+      link.addEventListener("click", (e) => {
+        const href = link.getAttribute("href");
+        if (href && href.startsWith("/")) {
+          e.preventDefault();
+          handleRouteNavigation(href);
+        }
+      });
+    });
+
+    window.addEventListener("popstate", () => {
+      handleRouteNavigation(window.location.pathname, false);
+    });
+
     // Logo Glitch
     dom.brandLogo.addEventListener("mouseenter", () => {
       dom.logoGlyph.textContent = "%#";
@@ -1239,10 +1292,55 @@
   }
 
   // =========================================================================
-  // 14. INITIAL BOOTSTRAP
+  // 14. ROUTING & CHAOS LOGIC
+  // =========================================================================
+  function handleRouteNavigation(path, push = true) {
+    if (push && window.location.pathname !== path) {
+      history.pushState(null, "", path);
+    }
+
+    // Highlight nav link
+    document.querySelectorAll(".nav-link").forEach(link => {
+      const href = link.getAttribute("href");
+      link.classList.toggle("active", href === path);
+    });
+
+    if (path === "/create") {
+      document.getElementById("playground").scrollIntoView({ behavior: "smooth" });
+    } else if (path === "/explore") {
+      document.getElementById("explore").scrollIntoView({ behavior: "smooth" });
+    } else if (path === "/presets") {
+      document.getElementById("presets-section").scrollIntoView({ behavior: "smooth" });
+    } else if (path === "/" || path === "") {
+      document.getElementById("hero").scrollIntoView({ behavior: "smooth" });
+    }
+  }
+
+  function triggerChaosMode() {
+    audio.easterEgg();
+    state.style = allStyles[Math.floor(Math.random() * allStyles.length)];
+    state.theme = allThemes[Math.floor(Math.random() * allThemes.length)];
+    state.density = +(1.1 + Math.random() * 0.4).toFixed(2);
+    state.contrast = +(1.3 + Math.random() * 0.5).toFixed(2);
+    state.sharpness = +(1.2 + Math.random() * 0.4).toFixed(2);
+    state.crt = true;
+    dom.crtOverlay.classList.remove("disabled");
+    dom.checkCrt.checked = true;
+    syncUIWithState();
+    showToast("⚡ CHAOS MODE ACTIVATED!", "success");
+    triggerRender(true);
+  }
+
+  // =========================================================================
+  // 15. INITIAL BOOTSTRAP
   // =========================================================================
   function bootstrap() {
     initEventListeners();
+    // Check initial route
+    const currentPath = window.location.pathname;
+    if (currentPath && currentPath !== "/") {
+      handleRouteNavigation(currentPath, false);
+    }
     // Default load portrait sample
     loadSample("portrait");
   }
@@ -1253,3 +1351,4 @@
     bootstrap();
   }
 })();
+
