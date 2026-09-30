@@ -21,33 +21,43 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const navLinkClass = (tab: typeof currentTab) =>
-    `px-3 py-1.5 text-xs font-mono tracking-widest uppercase transition-all ${
+    `px-3 py-1 text-xs font-mono tracking-wider transition-all rounded-full ${
       currentTab === tab
-        ? 'text-[#00ff88] font-bold border-b border-[#00ff88]'
-        : 'text-zinc-400 hover:text-white'
+        ? 'bg-white/10 text-white font-bold'
+        : 'text-zinc-400 hover:text-white hover:bg-white/5'
     }`;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#050507]/90 backdrop-blur-md border-b border-[#14161f]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        {/* Left: Brand */}
+    <header className="sticky top-3 z-50 w-full px-4 sm:px-6 pointer-events-none">
+      <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 pointer-events-auto">
+        {/* Left: Brand Badge */}
         <button
           onClick={() => {
             sound.playClick();
             setCurrentTab('home');
           }}
-          className="flex items-center gap-2.5 group text-left"
+          className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#0a0d14]/80 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all group"
         >
-          <div className="w-7 h-7 rounded bg-[#0b0c10] border border-[#1f232e] flex items-center justify-center group-hover:border-[#00ff88]/60 transition-colors">
-            <span className="text-[#00ff88] font-mono text-xs font-bold">&gt;_</span>
+          <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-[#00ff88]/20 transition-colors">
+            <span className="text-[#00ff88] font-mono text-[10px] font-bold">&gt;</span>
           </div>
-          <span className="font-display font-bold text-sm tracking-widest text-white group-hover:text-[#00ff88] transition-colors">
+          <span className="font-display font-bold text-xs tracking-wider text-white">
             TERMIART
           </span>
+          <span className="text-[10px] font-mono text-zinc-500 hidden sm:inline">// v2.4</span>
         </button>
 
-        {/* Center: Minimal Navigation */}
-        <nav className="flex items-center gap-4 sm:gap-8">
+        {/* Center: Kernel-Code Floating Nav Pill */}
+        <nav className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#0a0d14]/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+          <button
+            onClick={() => {
+              sound.playClick();
+              setCurrentTab('home');
+            }}
+            className={navLinkClass('home')}
+          >
+            //Home
+          </button>
           <button
             onClick={() => {
               sound.playClick();
@@ -55,9 +65,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
             className={navLinkClass('create')}
           >
-            CREATE
+            //Studio
           </button>
-
           <button
             onClick={() => {
               sound.playClick();
@@ -65,9 +74,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
             className={navLinkClass('explore')}
           >
-            EXPLORE
+            //Explore
           </button>
-
           <button
             onClick={() => {
               sound.playClick();
@@ -75,23 +83,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
             className={navLinkClass('presets')}
           >
-            PRESETS
+            //Presets
           </button>
         </nav>
 
-        {/* Right: RANDOMIZE & Sound Toggle */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2">
           {onRandomize && (
             <button
               onClick={() => {
                 sound.playShift();
                 onRandomize();
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0e1017] hover:bg-[#161824] border border-[#232735] hover:border-amber-400/60 text-zinc-300 hover:text-amber-300 font-mono text-xs font-semibold tracking-wider transition-all active:scale-95 shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-black hover:bg-zinc-200 font-mono text-xs font-bold tracking-wide transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
               title="Surprise me with randomized creative parameters"
             >
-              <Dices className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">RANDOMIZE</span>
+              <span className="text-sm leading-none">↗</span>
+              <span>SURPRISE ME</span>
             </button>
           )}
 
@@ -99,7 +107,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={handleToggleSound}
             title={muted ? 'Unmute tactical audio' : 'Mute tactical audio'}
             aria-label={muted ? 'Unmute tactical audio' : 'Mute tactical audio'}
-            className="w-8 h-8 rounded-lg bg-[#0e1017] border border-[#232735] flex items-center justify-center text-zinc-400 hover:text-[#00ff88] hover:border-[#2f3547] transition-all"
+            className="w-8 h-8 rounded-full bg-[#0a0d14]/80 backdrop-blur-xl border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white hover:border-white/20 transition-all"
           >
             {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-[#00ff88]" />}
           </button>

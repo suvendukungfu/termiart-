@@ -72,36 +72,39 @@ export const ExploreGallery: React.FC<ExploreGalleryProps> = ({ onSelectSample }
   ];
 
   return (
-    <section className="w-full py-16 bg-[#050507]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+    <section className="w-full py-20 bg-[#06080d] border-t border-[#141824] relative">
+      <div className="numeric-grid-bg absolute inset-0 opacity-15 pointer-events-none" />
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
           <div>
-            <span className="font-mono text-xs font-bold text-[#00ff88] uppercase tracking-wider">
-              EXPERIMENTAL DIGITAL-ART ARCHIVE
-            </span>
-            <h2 className="font-display font-bold text-2xl sm:text-3xl text-white mt-1">
-              Terminal Art Gallery
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0d1017] border border-white/10 text-[10px] font-mono text-zinc-400 mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+              <span>// ARCHIVE</span>
+            </div>
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight">
+              Curated Specimen Gallery
             </h2>
           </div>
-          <p className="text-xs font-mono text-zinc-500 max-w-sm">
-            Curated terminal artworks. Click "Try This Style" to immediately load the specimen into your creative instrument.
+          <p className="text-xs font-mono text-zinc-400 max-w-sm">
+            Inspect verified terminal specimens. Click any specimen to instantly initialize the creative studio parameters.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((item) => (
             <div
               key={item.id}
-              className="group rounded-2xl bg-[#08090d] border border-[#181a24] hover:border-[#282d3e] overflow-hidden transition-all flex flex-col justify-between shadow-xl"
+              className="group rounded-2xl bg-[#090c14]/90 border border-white/10 hover:border-white/25 overflow-hidden transition-all flex flex-col justify-between shadow-[0_15px_35px_rgba(0,0,0,0.5)]"
             >
               {/* Image Preview Container */}
-              <div className="relative h-48 bg-[#040406] p-4 flex items-center justify-center overflow-hidden border-b border-[#14161f]">
+              <div className="relative h-48 bg-[#04060a] p-4 flex items-center justify-center overflow-hidden border-b border-white/5">
                 <img
                   src={item.path}
                   alt={item.title}
                   className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
                 />
-                <span className="absolute top-3 left-3 text-[10px] font-mono px-2 py-0.5 rounded bg-[#0b0c10]/90 text-[#00ff88] border border-[#1f232e] backdrop-blur-xs">
+                <span className="absolute top-3 left-3 text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#090c14]/90 text-white border border-white/10 backdrop-blur-md">
                   {item.tag}
                 </span>
               </div>
@@ -109,7 +112,7 @@ export const ExploreGallery: React.FC<ExploreGalleryProps> = ({ onSelectSample }
               {/* Card Meta & Action */}
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-mono text-sm font-bold text-white group-hover:text-[#00ff88] transition-colors mb-1.5">
+                  <h3 className="font-mono text-sm font-bold text-white group-hover:text-amber-400 transition-colors mb-1.5">
                     {item.title}
                   </h3>
                   <p className="text-xs text-zinc-400 leading-relaxed">
@@ -117,32 +120,32 @@ export const ExploreGallery: React.FC<ExploreGalleryProps> = ({ onSelectSample }
                   </p>
 
                   {/* Metadata: Renderer, Theme, Dimensions */}
-                  <div className="mt-4 pt-3 border-t border-[#14161f] grid grid-cols-3 gap-2 text-[10px] font-mono text-zinc-500">
+                  <div className="mt-4 pt-3 border-t border-white/5 grid grid-cols-3 gap-2 text-[10px] font-mono text-zinc-500">
                     <div>
-                      <div className="text-zinc-600">RENDERER</div>
+                      <div className="text-zinc-600">//RENDERER</div>
                       <div className="text-zinc-300 font-bold uppercase truncate">{item.renderer}</div>
                     </div>
                     <div>
-                      <div className="text-zinc-600">THEME</div>
+                      <div className="text-zinc-600">//THEME</div>
                       <div className="text-zinc-300 font-bold uppercase truncate">{item.theme}</div>
                     </div>
                     <div>
-                      <div className="text-zinc-600">DIMENSIONS</div>
+                      <div className="text-zinc-600">//GRID</div>
                       <div className="text-zinc-300 font-bold">{item.dimensions}</div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-[#14161f]">
+                <div className="mt-5 pt-3 border-t border-white/5">
                   <button
                     onClick={() => {
                       sound.playClick();
                       onSelectSample(item.path, item.renderer, item.theme);
                     }}
-                    className="w-full py-2 rounded-xl bg-[#0e1017] hover:bg-[#00ff88] hover:text-black text-zinc-300 text-xs font-mono font-bold tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95 border border-[#232738] hover:border-[#00ff88]"
+                    className="w-full py-2.5 rounded-full bg-white/5 hover:bg-white text-zinc-300 hover:text-black text-xs font-mono font-bold tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95 border border-white/10 hover:border-white shadow-sm"
                   >
-                    <span>TRY THIS STYLE</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <span className="text-sm leading-none">↗</span>
+                    <span>LOAD SPECIMEN</span>
                   </button>
                 </div>
               </div>

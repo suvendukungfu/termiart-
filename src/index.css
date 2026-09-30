@@ -9,10 +9,10 @@
 }
 
 :root {
-  --background: #08080a;
+  --background: #06070a;
   --foreground: #f4f4f5;
-  --terminal: #0b0c10;
-  --terminal-border: #1f232e;
+  --terminal: #090a0f;
+  --terminal-border: #1a1d28;
   --muted: #71717a;
   --accent: #00ff88;
   --matrix: #00ff66;
@@ -38,6 +38,29 @@ body {
 
 .font-display {
   font-family: var(--font-display);
+}
+
+/* Halftone / Dotted Matrix Text effect like KernelCode */
+.text-dotted {
+  background-image: radial-gradient(circle at 1.5px 1.5px, rgba(255, 255, 255, 0.9) 1.2px, transparent 0);
+  background-size: 3.8px 3.8px;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+}
+
+/* Ambient numeric matrix coordinate grid background */
+.numeric-grid-bg {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Desert dune atmospheric horizon glow */
+.dune-glow {
+  background: radial-gradient(ellipse 80% 50% at 50% 100%, rgba(180, 80, 20, 0.12), transparent 70%);
 }
 
 /* Custom terminal scanline overlay */
@@ -86,16 +109,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #08080a;
+  background: #06070a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #232735;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #373e54;
 }
 
 /* Smooth transitions */

@@ -83,11 +83,14 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
   };
 
   return (
-    <div className="w-full bg-[#08090d] border border-[#181a24] rounded-2xl p-4 sm:p-5 flex flex-col gap-5 shadow-2xl">
+    <div className="w-full bg-[#0a0d14]/90 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col gap-6 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl">
       {/* Primary Actions: GENERATE • SURPRISE ME • COPY • SHARE • DOWNLOAD • ANIMATE • FULLSCREEN */}
       <div>
-        <div className="text-[10px] font-mono font-bold text-zinc-500 tracking-widest uppercase mb-2">
-          PRIMARY INSTRUMENT ACTIONS
+        <div className="flex items-center gap-2 mb-3">
+          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+          <span className="text-[10px] font-mono font-bold text-zinc-400 tracking-wider uppercase">
+            // PRIMARY ACTIONS
+          </span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2">
           <button
@@ -96,7 +99,7 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
               onGenerate();
             }}
             disabled={isRendering}
-            className="py-2.5 px-3 rounded-xl bg-[#00ff88] text-black font-mono text-xs font-bold tracking-wider hover:bg-[#33ff9f] active:scale-95 transition-all shadow-[0_0_20px_rgba(0,255,136,0.3)] flex items-center justify-center gap-1.5"
+            className="py-2.5 px-3 rounded-full bg-white text-black font-mono text-xs font-bold tracking-wider hover:bg-zinc-200 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center justify-center gap-1.5"
           >
             {isRendering ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-black" />
@@ -111,7 +114,7 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
               sound.playShift();
               onSurpriseMe();
             }}
-            className="py-2.5 px-3 rounded-xl bg-[#10121a] border border-[#232738] text-zinc-200 font-mono text-xs font-semibold hover:border-amber-400/60 hover:text-amber-300 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            className="py-2.5 px-3 rounded-full bg-white/5 border border-white/10 text-zinc-200 font-mono text-xs font-semibold hover:border-amber-400/60 hover:text-amber-300 active:scale-95 transition-all flex items-center justify-center gap-1.5"
             title="Randomize renderer, theme, density, and contrast"
           >
             <Dices className="w-3.5 h-3.5 text-amber-400" />
@@ -123,10 +126,11 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
               sound.playClick();
               onOpenCopyCenter();
             }}
-            className="py-2.5 px-3 rounded-xl bg-[#10121a] border border-[#232738] text-zinc-200 font-mono text-xs font-semibold hover:border-[#00ff88]/60 hover:text-[#00ff88] active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            className="py-2.5 px-3 rounded-full bg-white/5 border border-white/10 text-zinc-200 font-mono text-xs font-semibold hover:border-white/30 hover:text-white active:scale-95 transition-all flex items-center justify-center gap-1.5"
           >
-            <Copy className="w-3.5 h-3.5 text-[#00ff88]" />
+            <Copy className="w-3.5 h-3.5 text-zinc-400" />
             <span>COPY</span>
+            <span className="text-xs">↗</span>
           </button>
 
           <button
@@ -134,10 +138,11 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
               sound.playClick();
               onOpenShareModal();
             }}
-            className="py-2.5 px-3 rounded-xl bg-[#10121a] border border-[#232738] text-zinc-200 font-mono text-xs font-semibold hover:border-indigo-400/60 hover:text-indigo-300 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            className="py-2.5 px-3 rounded-full bg-white/5 border border-white/10 text-zinc-200 font-mono text-xs font-semibold hover:border-white/30 hover:text-white active:scale-95 transition-all flex items-center justify-center gap-1.5"
           >
-            <Share2 className="w-3.5 h-3.5 text-indigo-400" />
+            <Share2 className="w-3.5 h-3.5 text-zinc-400" />
             <span>SHARE</span>
+            <span className="text-xs">↗</span>
           </button>
 
           <button
@@ -145,10 +150,11 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
               sound.playClick();
               onOpenDownloadModal();
             }}
-            className="py-2.5 px-3 rounded-xl bg-[#10121a] border border-[#232738] text-zinc-200 font-mono text-xs font-semibold hover:border-cyan-400/60 hover:text-cyan-300 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            className="py-2.5 px-3 rounded-full bg-white/5 border border-white/10 text-zinc-200 font-mono text-xs font-semibold hover:border-white/30 hover:text-white active:scale-95 transition-all flex items-center justify-center gap-1.5"
           >
-            <Download className="w-3.5 h-3.5 text-cyan-400" />
-            <span>DOWNLOAD</span>
+            <Download className="w-3.5 h-3.5 text-zinc-400" />
+            <span>EXPORT</span>
+            <span className="text-xs">↗</span>
           </button>
 
           {onToggleAnimate && (
@@ -157,10 +163,10 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
                 sound.playShift();
                 onToggleAnimate();
               }}
-              className={`py-2.5 px-3 rounded-xl border font-mono text-xs font-semibold active:scale-95 transition-all flex items-center justify-center gap-1.5 ${
+              className={`py-2.5 px-3 rounded-full border font-mono text-xs font-semibold active:scale-95 transition-all flex items-center justify-center gap-1.5 ${
                 isAnimating
                   ? 'bg-rose-950/40 border-rose-500/70 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.25)]'
-                  : 'bg-[#10121a] border-[#232738] text-zinc-300 hover:border-rose-400/60 hover:text-rose-300'
+                  : 'bg-white/5 border-white/10 text-zinc-300 hover:border-white/30 hover:text-white'
               }`}
             >
               {isAnimating ? (
@@ -183,7 +189,7 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
                 sound.playClick();
                 onToggleFullscreen();
               }}
-              className="col-span-2 sm:col-span-2 lg:col-span-2 py-2 px-3 rounded-xl bg-[#10121a] border border-[#232738] text-zinc-400 hover:text-white font-mono text-xs font-medium hover:border-zinc-500 transition-all flex items-center justify-center gap-1.5"
+              className="col-span-2 sm:col-span-2 lg:col-span-2 py-2 px-3 rounded-full bg-white/5 border border-white/10 text-zinc-400 hover:text-white font-mono text-xs font-medium hover:border-white/20 transition-all flex items-center justify-center gap-1.5"
             >
               <Maximize2 className="w-3.5 h-3.5" />
               <span>FULLSCREEN STAGE</span>
@@ -194,9 +200,9 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
 
       {/* Character Renderer Engine Selection */}
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-2.5">
           <label className="text-[11px] font-mono font-bold text-zinc-400 tracking-wider uppercase">
-            RENDERER
+            // RENDER ENGINE
           </label>
           <span className="text-[10px] font-mono text-zinc-500">7 Engines</span>
         </div>
@@ -209,8 +215,8 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
                 onClick={() => updateOption('renderer', r.id)}
                 className={`p-2.5 rounded-xl border text-left transition-all ${
                   active
-                    ? 'bg-[#121522] border-[#00ff88] text-white shadow-[0_0_15px_rgba(0,255,136,0.15)]'
-                    : 'bg-[#0d0f17] border-[#1c1f2d] text-zinc-400 hover:text-zinc-200 hover:border-[#2b3044]'
+                    ? 'bg-white/10 border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.15)]'
+                    : 'bg-white/5 border-white/5 text-zinc-400 hover:text-zinc-200 hover:border-white/15'
                 }`}
               >
                 <div className="font-mono text-xs font-semibold flex items-center justify-between">
@@ -226,9 +232,9 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
 
       {/* Mood / Color Palette Selection */}
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-2.5">
           <label className="text-[11px] font-mono font-bold text-zinc-400 tracking-wider uppercase">
-            COLOR THEME
+            // COLOR THEME
           </label>
           <span className="text-[10px] font-mono text-zinc-500">10 Palettes</span>
         </div>
@@ -241,8 +247,8 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
                 onClick={() => updateOption('theme', t.id)}
                 className={`px-3 py-2 rounded-xl border text-left transition-all flex items-center gap-2 ${
                   active
-                    ? 'bg-[#121522] border-[#00ff88] text-white'
-                    : 'bg-[#0d0f17] border-[#1c1f2d] text-zinc-400 hover:text-zinc-200 hover:border-[#2b3044]'
+                    ? 'bg-white/10 border-white text-white'
+                    : 'bg-white/5 border-white/5 text-zinc-400 hover:text-zinc-200 hover:border-white/15'
                 }`}
               >
                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${t.dotColor}`} />
@@ -255,9 +261,9 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
 
       {/* Output Grid Width / Density */}
       <div>
-        <div className="flex items-center justify-between text-xs font-mono mb-1.5">
-          <span className="text-zinc-400 font-bold uppercase tracking-wide">GRID COLUMNS</span>
-          <span className="text-[#00ff88] font-bold">{options.width} cols</span>
+        <div className="flex items-center justify-between text-xs font-mono mb-2">
+          <span className="text-zinc-400 font-bold uppercase tracking-wider">// GRID DENSITY</span>
+          <span className="text-white font-bold bg-white/10 px-2 py-0.5 rounded-full text-[11px]">{options.width} cols</span>
         </div>
         <input
           type="range"
@@ -266,27 +272,27 @@ export const CreativeControls: React.FC<CreativeControlsProps> = ({
           step="5"
           value={options.width}
           onChange={(e) => updateOption('width', parseInt(e.target.value, 10))}
-          className="w-full accent-[#00ff88] h-1.5 bg-[#141724] rounded-lg cursor-pointer"
+          className="w-full accent-white h-1.5 bg-white/10 rounded-lg cursor-pointer"
         />
-        <div className="flex justify-between text-[10px] font-mono text-zinc-600 mt-1">
-          <span>Compact (30)</span>
-          <span>Balanced (90)</span>
-          <span>High Density (160)</span>
+        <div className="flex justify-between text-[10px] font-mono text-zinc-500 mt-1">
+          <span>// Compact (30)</span>
+          <span>// Balanced (90)</span>
+          <span>// Ultra-Density (160)</span>
         </div>
       </div>
 
       {/* Progressive Disclosure: Secondary Controls */}
-      <div className="border-t border-[#181b24] pt-3">
+      <div className="border-t border-white/5 pt-3">
         <button
           onClick={() => {
             sound.playClick();
             setShowAdvanced(!showAdvanced);
           }}
-          className="w-full flex items-center justify-between text-xs font-mono text-zinc-400 hover:text-zinc-200 py-1"
+          className="w-full flex items-center justify-between text-xs font-mono text-zinc-400 hover:text-white py-1"
         >
           <div className="flex items-center gap-2">
-            <Sliders className="w-3.5 h-3.5 text-zinc-500" />
-            <span className="tracking-wide">SECONDARY CONTROLS &amp; EFFECTS</span>
+            <Sliders className="w-3.5 h-3.5 text-zinc-400" />
+            <span className="tracking-wider">// ADVANCED TUNING &amp; MOTION</span>
           </div>
           {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
