@@ -149,13 +149,36 @@ def build_cli_command(config: RenderConfig, filename: str = "image.png") -> str:
     return " ".join(parts)
 
 
+@app.get("/create", response_class=HTMLResponse)
+@app.get("/explore", response_class=HTMLResponse)
+@app.get("/presets", response_class=HTMLResponse)
 @app.get("/", response_class=HTMLResponse)
-async def serve_index():
+async def serve_index(request: Request):
     """Serve main TermiArt Web Studio UI."""
     index_file = STATIC_DIR / "index.html"
     if not index_file.exists():
         raise HTTPException(status_code=404, detail="Web Studio frontend index.html not found.")
     return HTMLResponse(content=index_file.read_text(encoding="utf-8"))
+
+
+@app.get("/404", response_class=HTMLResponse)
+async def serve_404():
+    """Serve cinematic minimal 404 page."""
+    f404 = STATIC_DIR / "404.html"
+    if f404.exists():
+        return HTMLResponse(content=f404.read_text(encoding="utf-8"), status_code=404)
+    return HTMLResponse("<h1>404 Not Found</h1>", status_code=404)
+
+
+@app.exception_handler(404)
+async def custom_404_handler(request: Request, exc: Exception):
+    """Handle missing pages with the cinematic TermiArt 404 experience."""
+    if request.url.path.startswith("/api/"):
+        return JSONResponse(status_code=404, content={"detail": "API endpoint not found"})
+    f404 = STATIC_DIR / "404.html"
+    if f404.exists():
+        return HTMLResponse(content=f404.read_text(encoding="utf-8"), status_code=404)
+    return HTMLResponse("<h1>404 Not Found</h1>", status_code=404)
 
 
 @app.get("/api/health")
@@ -246,6 +269,24 @@ async def list_samples():
                 "style": "halfblock",
                 "theme": "fire",
                 "image_url": "/api/sample/landscape"
+            },
+            {
+                "id": "architecture",
+                "name": "Architecture",
+                "tag": "Neo-Tokyo",
+                "description": "Cyberpunk skyscraper tower & neon skyline",
+                "style": "unicode",
+                "theme": "cyberpunk",
+                "image_url": "/api/sample/architecture"
+            },
+            {
+                "id": "animals",
+                "name": "Animals",
+                "tag": "Cyber Panther",
+                "description": "Geometric cybernetic wolf with glowing eyes",
+                "style": "braille",
+                "theme": "rainbow",
+                "image_url": "/api/sample/animals"
             },
             {
                 "id": "logo",
